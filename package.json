@@ -1,0 +1,27 @@
+{
+  "name": "mastadon-soundcloud-bot",
+  "version": "1.0.0",
+  "description": "A bot designed to repost from a SoundCloud feed to the Mastadon Fediverse",
+  "main": "bot.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jncosideout/SoundCloud-Mastadon-repost-bot.git"
+  },
+  "keywords": [
+    "Mastadon",
+    "SoundCloud"
+  ],
+  "author": "jncosideout",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jncosideout/SoundCloud-Mastadon-repost-bot/issues"
+  },
+  "homepage": "https://github.com/jncosideout/SoundCloud-Mastadon-repost-bot#readme",
+  "dependencies": {
+    "dotenv": "^8.2.0",
+    "mastodon-api": "^1.3.0"
+  }
+}
