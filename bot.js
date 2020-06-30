@@ -1,6 +1,7 @@
+require('dotenv').config();
 console.log("Mastadon bot starting...");
 const Mastadon = require('mastodon-api');
-const Env = require('dotenv').config();
+const fs = require('fs');
 
 const M = new Mastadon({
     client_key: process.env.CLIENT_KEY,
@@ -11,15 +12,21 @@ const M = new Mastadon({
 })
 
 const params = {
-    status: "sourCreamPringles is listening to this track on SoundCloud",
-    media_id: "soundcloud url goes here?"
+    status: "this song came from  my feed on SC\n \
+    https://soundcloud.com/dannyplayamaqui/ham-ice-cream-a-meltdown \
+    follow me for more cool EDM tracks \
+    https://soundcloud.com/sour_cream_pringles "
 }
 
-M.post(statuses, params, (err, data, response) => {
+M.post('statuses', params, (err, data, response) => {
     if (err) {
         console.log(err);
     } else {
+        //reference for data output
+        //fs.writeFileSync('data.json', JSON.stringify(data, null, 2));
         console.log(data);
+        console.log(`ID: ${data.id} and timestamp: ${data.created_at}`);
+        console.log(data.content);
         console.log(response);
     }
 });
