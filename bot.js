@@ -9,7 +9,9 @@ const fs = require('fs'),
 var songToPost = "",
     songNumber = 0,
     data = fs.readFileSync(path1),
-    numberStr = "";
+    numberStr = "",
+    i_as_string = "";
+
 
 data.forEach(i => {
     numberStr += String.fromCharCode(i);
@@ -42,9 +44,7 @@ var s = fs.createReadStream(path2)
                 console.log('i incremented to ' + i);
                 if (i > songNumber) {
                     console.log('songToPost = ' + song);
-                    songToPost = song;
-                    songNumber = i;
-                    console.log('songNumber incremented to ' + songNumber);                    
+                    songToPost = song;                   
                     s.emit('end');
                 } else {
                     s.resume();
@@ -56,8 +56,7 @@ var s = fs.createReadStream(path2)
         })
         .on('end', function(){
             console.log('Finished Reading');
-            const i_as_string = i.toString();
-            fs.writeFileSync(path1, i_as_string);
+            i_as_string = i.toString();
             // finally, toot the new song
             toot(songToPost);
         })
@@ -80,9 +79,10 @@ function toot(newSong) {
         } else {
             //reference for data output
             //fs.writeFileSync('data.json', JSON.stringify(data, null, 2));
-            //console.log(data);
             console.log(`ID: ${data.id} and timestamp: ${data.created_at}`);
             console.log(data.content);
+            fs.writeFileSync(path1, i_as_string);
+            console.log('songNumber incremented to ' + i_as_string); 
             //console.log(response);
         }
     });
