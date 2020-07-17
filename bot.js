@@ -1,40 +1,77 @@
 require('dotenv').config();
-var SC = require('soundcloud');
+console.log("Mastadon bot starting...");
+const Mastadon = require('mastodon-api');
+const fs = require('fs'),
+      es = require('event-stream'),
+      os = require('os'),
+      path1 = './songNumber.txt',
+      path2 = 'scpLikesAndReposts.txt';
+var songToPost = "",
+    songNumber = 0,
+    data = fs.readFileSync(path1),
+    numberStr = "";
 
-SC.initialize({
-    client_id: process.env.SC_CLIENT_ID,
-    oauth_token: process.env.SC_AUTH_TOKEN
-})
-console.log("getting sourcreampringles soundcloud reposts")
-SC.put('/me',{
-    user: {description: 'I am using the SouncCloud API!'}
-}).then(function(){
-    return SC.get('/me');
-}).then(function(me){
-    console.log(me.description);
-}).catch(function(error){
-    console.log(error);
+data.forEach(i => {
+    numberStr += String.fromCharCode(i);
 });
+console.log("song number is: " + data);
+songNumber = parseInt(numberStr);
+
+const M = new Mastadon({
+    client_key: process.env.M_CLIENT_KEY,
+    client_secret: process.env.M_CLIENT_SECRET,
+    access_token: process.env.M_AUTH_TOKEN,
+    timeout_ms: 60*1000,  // optional HTTP request timeout to apply to all requests.
+    api_url: 'https://botsin.space/api/v1/', // optional, defaults to https://mastodon.social/api/v1/
+})
 
 
-// console.log("Mastadon bot starting...");
-// const Mastadon = require('mastodon-api');
-// const fs = require('fs');
 
-// const M = new Mastadon({
-//     client_key: process.env.M_CLIENT_KEY,
-//     client_secret: process.env.M_CLIENT_SECRET,
-//     access_token: process.env.M_AUTH_TOKEN,
-//     timeout_ms: 60*1000,  // optional HTTP request timeout to apply to all requests.
-//     api_url: 'https://botsin.space/api/v1/', // optional, defaults to https://mastodon.social/api/v1/
-// })
+var i = 0;
 
-function toot() {
+var s = fs.createReadStream(path2)
+    .pipe(es.split())
+    .pipe(es.mapSync(function(song) {
+            if (i <= songNumber) {
+                // pause the readstream
+                s.pause();
+                if (i <= songNumber) {
+                    console.log("song was read: ", song);
+                }
+                i++;
+                console.log('i incremented to ' + i);
+                if (i > songNumber) {
+                    console.log('songToPost = ' + song);
+                    songToPost = song;
+                    songNumber = i;
+                    console.log('songNumber incremented to ' + songNumber);                    
+                    s.emit('end');
+                } else {
+                    s.resume();
+                }
+            }
+        })
+        .on('error', function(err) {
+            console.log('Error: ', err);
+        })
+        .on('end', function(){
+            console.log('Finished Reading');
+            const i_as_string = i.toString();
+            fs.writeFileSync(path1, i_as_string);
+            // finally, toot the new song
+            toot(songToPost);
+        })
+    );
+
+
+
+
+function toot(newSong) {
     const params = {
-        status: "this song came from  my feed on SC\n\n \
-        https://soundcloud.com/gatedrecordings/sets/uf0-im-lost-gtd009\n\n \
-        follow me for more cool EDM tracks on SC:\n\n \
-        https://soundcloud.com/sour_cream_pringles "
+        status: "this song came from  my feed on SC\n\n"
+        + newSong + "\n\n" +
+        "follow me for more cool EDM tracks on SC:\n\n"
+        + "https://soundcloud.com/sour_cream_pringles"
     }
 
     M.post('statuses', params, (err, data, response) => {
@@ -48,5 +85,5 @@ function toot() {
             console.log(data.content);
             //console.log(response);
         }
-});
+    });
 }
