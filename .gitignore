@@ -142,4 +142,9 @@ dist
 # End of https://www.toptal.com/developers/gitignore/api/visualstudiocode,linux,node
 
 # Custom rules (everything added below won't be overriden by 'Generate .gitignore File' if you use 'Update' option)
-
+scpLikesAndReposts.txt
+songNumber.txt
+temp.txt
+totalSongsNumber.txt
+bot-daemon.js
+bot-u-sc.js
