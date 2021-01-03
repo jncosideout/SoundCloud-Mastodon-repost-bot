@@ -34,7 +34,7 @@ if (songNumData.length != 0) {
     });
 } else {
     console.log('songNumData was empty');
-    console.log('make sure bot-daemon.js has read access')
+    console.log('make sure bot.js has read access')
     process.exit(-1);
 }
 console.log("song number is: " + songNumData);
@@ -47,7 +47,7 @@ if (totalSongNumData.length != 0) {
     });  
 } else {
     console.log('totalSongNumData was empty');
-    console.log('make sure bot-daemon.js has read access');
+    console.log('make sure bot.js has read access');
     process.exit(-1);
 }
 
