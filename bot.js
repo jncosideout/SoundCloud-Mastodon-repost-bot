@@ -100,7 +100,7 @@ var s = fs.createReadStream(path2)
 
 function toot(newSong) {
     const params = {
-        status: "this song came from  my feed on SC\n\n"
+        status: "this song came from  my feed on SoundCloud\n\n"
         + newSong + "\n\n" +
         "follow me for more cool electronic music here:\n\n"
         + "https://soundcloud.com/sour_cream_pringles"
