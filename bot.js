@@ -124,6 +124,6 @@ function toot(newSong) {
     console.log('songNumber incremented to ' + currentSongNumStr); 
     fs.writeFileSync(path3, totalSongStr);
     console.log('total songs = ' + totalSongStr);
-    console.log("new song is" + newSong)
+    console.log("new song is " + newSong)
     //=================================DEBUG
 }
