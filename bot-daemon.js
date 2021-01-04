@@ -57,13 +57,13 @@ if (songNumber == totalSongNum) {
     songNumber = 0;
 }
 
-const M = new Mastadon({
-    client_key: process.env.M_CLIENT_KEY,
-    client_secret: process.env.M_CLIENT_SECRET,
-    access_token: process.env.M_AUTH_TOKEN,
-    timeout_ms: 60*1000,  // optional HTTP request timeout to apply to all requests.
-    api_url: 'https://botsin.space/api/v1/', // optional, defaults to https://mastodon.social/api/v1/
-})
+// const M = new Mastadon({
+//     client_key: process.env.M_CLIENT_KEY,
+//     client_secret: process.env.M_CLIENT_SECRET,
+//     access_token: process.env.M_AUTH_TOKEN,
+//     timeout_ms: 60*1000,  // optional HTTP request timeout to apply to all requests.
+//     api_url: 'https://botsin.space/api/v1/', // optional, defaults to https://mastodon.social/api/v1/
+// })
 
 
 

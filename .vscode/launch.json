@@ -6,7 +6,7 @@
     "configurations": [
         {
             "name": "Launch Program",
-            "program": "${workspaceFolder}/bot-daemon.js",
+            "program": "${workspaceFolder}/bot.js",
             "request": "launch",
             "skipFiles": [
                 "<node_internals>/**"
