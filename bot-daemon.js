@@ -4,9 +4,9 @@ const Mastadon = require('mastodon-api');
 const fs = require('fs'),
       es = require('event-stream'),
       os = require('os'),
-      path1 = 'songNumber.txt',
-      path2 = 'scpLikesAndReposts.txt',
-      path3 = 'totalSongsNumber.txt';
+      path1 = 'songNumberTEMP.txt',
+      path2 = 'scpLikesAndRepostsTEMP.txt',
+      path3 = 'totalSongsNumberTEMP.txt';
 var songToPost = "",
 
     songNumber = 0,
@@ -107,16 +107,17 @@ function toot(newSong) {
         + "https://soundcloud.com/sour_cream_pringles"
     }
 
-    M.post('statuses', params, (err, data, response) => {
-        if (err) {
-            console.log(err);
-        } else {
-            console.log(`ID: ${data.id} and timestamp: ${data.created_at}`);
+    // M.post('statuses', params, (err, data, response) => {
+    //     if (err) {
+    //         console.log(err);
+    //     } else {
+    //         console.log(`ID: ${data.id} and timestamp: ${data.created_at}`);
 
-            fs.writeFileSync(path1, currentSongNumStr);
-            console.log('songNumber incremented to ' + currentSongNumStr); 
-            fs.writeFileSync(path3, totalSongStr);
-            console.log('total songs = ' + totalSongStr);
-        }
-    });
+    //         fs.writeFileSync(path1, currentSongNumStr);
+    //         console.log('songNumber incremented to ' + currentSongNumStr); 
+    //         fs.writeFileSync(path3, totalSongStr);
+    //         console.log('total songs = ' + totalSongStr);
+    //     }
+    // });
+    console.log("new song is" + newSong)
 }
