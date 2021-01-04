@@ -119,5 +119,11 @@ function toot(newSong) {
     //         console.log('total songs = ' + totalSongStr);
     //     }
     // });
+    //DEBUG======================================
+    fs.writeFileSync(path1, currentSongNumStr);
+    console.log('songNumber incremented to ' + currentSongNumStr); 
+    fs.writeFileSync(path3, totalSongStr);
+    console.log('total songs = ' + totalSongStr);
     console.log("new song is" + newSong)
+    //=================================DEBUG
 }
