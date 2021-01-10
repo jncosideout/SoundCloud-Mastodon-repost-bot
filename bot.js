@@ -121,14 +121,16 @@ var s = fs.createReadStream(path2)
 
 function toot(newSong) {
     const params = {
-        status: "this song came from  my feed on SC\n\n"
+        status: "this song came from  my feed on SoundCloud\n\n"
         + newSong + "\n\n" +
         "follow me for more cool electronic music here:\n\n"
-        + "https://soundcloud.com/sour_cream_pringles"
+        + "https://soundcloud.com/sour_cream_pringles" +
+        "\n\n\n\n" + "#EDM #acid #electro #IDM" + "\n\n"
     }
 
     // M.post('statuses', params, (err, data, response) => {
     //     if (err) {
+    //         console.log("an error when tooting, errno=" + err.errno)
     //         console.log(err);
     //     } else {
     //         console.log("here is the toot:\n")                
