@@ -1,7 +1,6 @@
 require('dotenv').config();
 console.log("Mastadon bot starting...");
 const Mastadon = require('mastodon-api');
-const { exit } = require('process');
 const fs = require('fs'),
       es = require('event-stream'),
       os = require('os'),
@@ -24,8 +23,9 @@ try {
     songNumData = fs.readFileSync(path1);
     totalSongNumData = fs.readFileSync(path3);
 } catch (error) {
+    console.log("a READ error occurred, errno=" + error.errno + "\n")
     console.log(error)
-    process.exit(-1);    
+    process.exit(error.errno);    
 }
 
 if (songNumData.length != 0) {
@@ -34,10 +34,11 @@ if (songNumData.length != 0) {
     });
 } else {
     console.log('songNumData was empty');
-    console.log('make sure bot.js has read access')
-    process.exit(-1);
+    console.log('make sure bot-daemon.js has read access')
+    process.exit(1);
 }
 console.log("song number is: " + songNumData);
+// the actual song read will be songNumber + 1
 songNumber = parseInt(currentSongNumStr);
 
 
@@ -47,8 +48,8 @@ if (totalSongNumData.length != 0) {
     });  
 } else {
     console.log('totalSongNumData was empty');
-    console.log('make sure bot.js has read access');
-    process.exit(-1);
+    console.log('make sure bot-daemon.js has read access');
+    process.exit(1);
 }
 
 console.log("total songs number is: " + totalSongNumData);
@@ -73,23 +74,43 @@ var i = 0;
 var s = fs.createReadStream(path2)
     .pipe(es.split())
     .pipe(es.mapSync(function(song) {
+                // pause the readstream
                 s.pause();
+                
+                // the stream reads past the end of the file, causing a blank song to be read
+                // so to keep the total to not be counted one above the actual total,
+                // only increment if not blank
+                if (song != '') {
+                    i++;
+                }
 
-                i++;
                 if (i > songNumber && i_as_string == "") {
                     console.log('songToPost = ' + song);
                     songToPost = song;                   
                     i_as_string = i.toString();
                 } 
-                s.resume();  
+
+                s.resume();                
         })
         .on('error', function(err) {
-            console.log('Error: ', err);
+            console.log('Error occurred, errno=:' + err.errno + '\n', err);
+            process.exit(err.errno)
         })
         .on('end', function(){
             console.log('Finished Reading');
             totalSongStr = i.toString();
             currentSongNumStr = i_as_string;
+
+            try {
+                fs.writeFileSync(path1, currentSongNumStr);
+                console.log('songNumber incremented to ' + currentSongNumStr); 
+                fs.writeFileSync(path3, totalSongStr);
+                console.log('total songs = ' + totalSongStr);
+            } catch(error) {
+                console.log("a WRITE error occurred, errno=" + error.errno + "\n")
+                console.log(error)
+                process.exit(error.errno)
+            }
             // finally, toot the new song
             toot(songToPost);
         })
@@ -103,24 +124,17 @@ function toot(newSong) {
         status: "this song came from  my feed on SoundCloud\n\n"
         + newSong + "\n\n" +
         "follow me for more cool electronic music here:\n\n"
-        + "https://soundcloud.com/sour_cream_pringles"
+        + "https://soundcloud.com/sour_cream_pringles" +
+        "\n\n\n\n" + "#EDM #acid #electro #IDM" + "\n\n"
     }
 
     M.post('statuses', params, (err, data, response) => {
         if (err) {
+            console.log("an error when tooting, errno=" + err.errno)
             console.log(err);
         } else {
-            //reference for data output
-            // uncomment to write data
-            // fs.writeFileSync('data.json', JSON.stringify(data, null, 2));
-            // uncomment for debugging            
+            console.log("here is the toot:\n")                
             console.log(`ID: ${data.id} and timestamp: ${data.created_at}`);
-            // console.log(data.content);
-            // console.log(response);
-            fs.writeFileSync(path1, currentSongNumStr);
-            console.log('songNumber incremented to ' + currentSongNumStr); 
-            fs.writeFileSync(path3, totalSongStr);
-            console.log('total songs = ' + totalSongStr);
         }
     });
 }
