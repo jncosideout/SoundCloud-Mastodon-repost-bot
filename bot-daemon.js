@@ -67,6 +67,13 @@ const M = new Mastadon({
     api_url: 'https://botsin.space/api/v1/', // optional, defaults to https://mastodon.social/api/v1/
 })
 
+const NAS = new Mastadon({
+    client_key: process.env.NAS_CLIENT_KEY,
+    client_secret: process.env.NAS_CLIENT_SECRET,
+    access_token: process.env.NAS_AUTH_TOKEN,
+    timeout_ms: 60*1000,  // optional HTTP request timeout to apply to all requests.
+    api_url: 'https://noagendasocial.com/api/v1/', // optional, defaults to https://mastodon.social/api/v1/
+})
 
 
 var i = 0;
@@ -133,7 +140,17 @@ function toot(newSong) {
             console.log("an error when tooting, errno=" + err.errno)
             console.log(err);
         } else {
-            console.log("here is the toot:\n")                
+            console.log("here is the toot on botsin.space:\n")                
+            console.log(`ID: ${data.id} and timestamp: ${data.created_at}`);
+        }
+    });
+
+    NAS.post('statuses', params, (err, data, response) => {
+        if (err) {
+            console.log("an error when tooting, errno=" + err.errno)
+            console.log(err);
+        } else {
+            console.log("here is the toot on noagendasocial.com:\n")                
             console.log(`ID: ${data.id} and timestamp: ${data.created_at}`);
         }
     });
