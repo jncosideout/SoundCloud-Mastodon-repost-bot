@@ -132,7 +132,8 @@ function toot(newSong) {
         + newSong + "\n\n" +
         "for more cool electronic music go here: ⬇️ \n\n"
         + "https://soundcloud.com/sour_cream_pringles" +
-        "\n\n\n\n" + "#EDM #acid #electro #IDM" + "\n\n"
+        "\n\n" + "#EDM #acid #electro #IDM" + "\n\n\n\n" +
+        "♬♫♪ ヽ(⌐■_■)ﾉ ♪♫♬"
     }
 
     M.post('statuses', params, (err, data, response) => {
