@@ -57,6 +57,7 @@ totalSongNum = parseInt(totalSongStr);
 
 if (songNumber == totalSongNum) {
     songNumber = 0;
+    console.log('songNumber reset to zero since reached EOF')
 }
 
 // const M = new Mastadon({
