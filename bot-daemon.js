@@ -12,6 +12,8 @@ var songToPost = "",
     songNumber = 0,
     songNumData = [],
     currentSongNumStr = "",
+    //in case we fail to post, store the old num
+    oldSongNumStr = ""
 
     i_as_string = "",
     
@@ -108,24 +110,13 @@ var s = fs.createReadStream(path2)
             console.log('Finished Reading');
             totalSongStr = i.toString();
             currentSongNumStr = i_as_string;
-
-            try {
-                fs.writeFileSync(path1, currentSongNumStr);
-                console.log('songNumber incremented to ' + currentSongNumStr); 
-                fs.writeFileSync(path3, totalSongStr);
-                console.log('total songs = ' + totalSongStr);
-            } catch(error) {
-                console.log("a WRITE error occurred, errno=" + error.errno + "\n")
-                console.log(error)
-                process.exit(error.errno)
-            }
+            // update songNum before posting to Mastodon
+            console.log("incrementing songNumber")
+            updateSongNum(currentSongNumStr)
             // finally, toot the new song
             toot(songToPost);
         })
     );
-
-
-
 
 function toot(newSong) {
     const params = {
@@ -138,22 +129,55 @@ function toot(newSong) {
     }
 
     M.post('statuses', params, (err, data, response) => {
-        if (err) {
-            console.log("an error when tooting, errno=" + err.errno)
-            console.log(err);
-        } else {
-            console.log("here is the toot on botsin.space:\n")                
-            console.log(`ID: ${data.id} and timestamp: ${data.created_at}`);
-        }
+        mastodonCallback(err, data, response, M.apiUrl)
     });
 
     NAS.post('statuses', params, (err, data, response) => {
-        if (err) {
-            console.log("an error when tooting, errno=" + err.errno)
-            console.log(err);
-        } else {
-            console.log("here is the toot on noagendasocial.com:\n")                
-            console.log(`ID: ${data.id} and timestamp: ${data.created_at}`);
-        }
+        mastodonCallback(err, data, response, NAS.apiUrl)
     });
+}
+
+function mastodonCallback(post_err, data, response, instanceURL) {
+    if (post_err) {
+        console.log("an error when tooting, errno=" + post_err.errno)            
+        console.log(post_err)
+        console.log("decrementing songNumber")
+        //write the old songNum back into the file
+        updateSongNum(oldSongNumStr)
+        process.exit(post_err.errno)
+    } else if (data.length < 1) {
+        console.log("no data")
+        console.log("decrementing songNumber")
+        //write the old songNum back into the file
+        updateSongNum(oldSongNumStr)
+        process.exit(1)
+    } else {
+        rspCode = response.statusCode
+        switch (true) {
+            case (rspCode >= 200 && rspCode < 300):
+                //SUCCESS
+                console.log(`here is the toot on ${instanceURL}:`) 
+                console.log(`ID: ${data.id} and timestamp: ${data.created_at}`)
+                break
+            default:
+                console.log("request failed, response.statusCode= " + rspCode)
+                console.log("decrementing songNumber")
+                //write the old songNum back into the file
+                updateSongNum(oldSongNumStr)
+                process.exit(1)
+        }
+    }
+} 
+
+function updateSongNum(currentSongNumStr) {
+    try {
+        fs.writeFileSync(path1, currentSongNumStr);
+        console.log('songNumber changed to ' + currentSongNumStr); 
+        fs.writeFileSync(path3, totalSongStr);
+        console.log('total songs = ' + totalSongStr);
+    } catch(error) {
+        console.log("a WRITE error occurred, errno=" + error.errno + "\n")
+        console.log(error)
+        process.exit(error.errno)
+    }
 }
