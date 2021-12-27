@@ -33,6 +33,7 @@ try {
 if (songNumData.length != 0) {
     songNumData.forEach(i => {
         currentSongNumStr += String.fromCharCode(i);
+        oldSongNumStr = currentSongNumStr
     });
 } else {
     console.log('songNumData was empty');
