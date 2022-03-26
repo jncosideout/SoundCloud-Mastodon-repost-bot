@@ -63,14 +63,6 @@ if (songNumber == totalSongNum) {
     console.log('songNumber reset to zero since reached EOF')
 }
 
-const M = new Mastadon({
-    client_key: process.env.M_CLIENT_KEY,
-    client_secret: process.env.M_CLIENT_SECRET,
-    access_token: process.env.M_AUTH_TOKEN,
-    timeout_ms: 60*1000,  // optional HTTP request timeout to apply to all requests.
-    api_url: 'https://botsin.space/api/v1/', // optional, defaults to https://mastodon.social/api/v1/
-})
-
 const NAS = new Mastadon({
     client_key: process.env.NAS_CLIENT_KEY,
     client_secret: process.env.NAS_CLIENT_SECRET,
@@ -128,11 +120,7 @@ function toot(newSong) {
         "\n\n" + "#EDM #acid #electro #IDM" + "\n\n\n\n" +
         "♬♫♪ ヽ(⌐■_■)ﾉ ♪♫♬"
     }
-
-    M.post('statuses', params, (err, data, response) => {
-        mastodonCallback(err, data, response, M.apiUrl)
-    });
-
+    
     NAS.post('statuses', params, (err, data, response) => {
         mastodonCallback(err, data, response, NAS.apiUrl)
     });
