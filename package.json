@@ -21,6 +21,7 @@
   },
   "homepage": "https://github.com/jncosideout/SoundCloud-Mastadon-repost-bot#readme",
   "dependencies": {
+    "event-stream": "^4.0.1",
     "dotenv": "^8.6.0",
     "eslint": "^7.32.0",
     "lodash.template": "^4.5.0",
