@@ -1,6 +1,6 @@
 require('dotenv').config();
-console.log("Mastadon bot starting...");
-const Mastadon = require('mastodon-api');
+console.log("Mastodon bot starting...");
+const Mastodon = require('mastodon-api');
 const fs = require('fs'),
       es = require('event-stream'),
       os = require('os'),
@@ -14,6 +14,7 @@ var songToPost = "",
     currentSongNumStr = "",
     //in case we fail to post, store the old num
     oldSongNumStr = ""
+
     i_as_string = "",
     
     totalSongNum = 0,
@@ -62,15 +63,13 @@ if (songNumber == totalSongNum) {
     console.log('songNumber reset to zero since reached EOF')
 }
 
-const M = new Mastadon({
+const M = new Mastodon({
     client_key: process.env.M_CLIENT_KEY,
     client_secret: process.env.M_CLIENT_SECRET,
     access_token: process.env.M_AUTH_TOKEN,
     timeout_ms: 60*1000,  // optional HTTP request timeout to apply to all requests.
     api_url: 'https://botsin.space/api/v1/', // optional, defaults to https://mastodon.social/api/v1/
 })
-
-
 
 var i = 0;
 
@@ -104,57 +103,27 @@ var s = fs.createReadStream(path2)
             totalSongStr = i.toString();
             currentSongNumStr = i_as_string;
             // update songNum before posting to Mastodon
-            console.log("incrementing songNumber")            
+            console.log("incrementing songNumber")
             updateSongNum(currentSongNumStr)
             // finally, toot the new song
             toot(songToPost);
         })
     );
 
-
-
-
 function toot(newSong) {
     const params = {
-        status: "this song came from  my feed on SoundCloud\n\n"
+        status: "this song came from  my feed on SoundCloud: ⬇️\n\n"
         + newSong + "\n\n" +
-        "follow me for more cool electronic music here:\n\n"
+        "for more cool electronic music go here: ⬇️ \n\n"
         + "https://soundcloud.com/sour_cream_pringles" +
-        "\n\n\n\n" + "#EDM #acid #electro #IDM" + "\n\n"
+        "\n\n" + "#EDM #acid #electro #IDM" + "\n\n\n\n" +
+        "♬♫♪ ヽ(⌐■_■)ﾉ ♪♫♬",
+        visibility: "direct"
     }
 
-    //DEBUG testing Promises instead of callback
-    // seems to work but Uncaught Error: getaddrinfo ENOTFOUND
-    // is a bug in the mastodon-api library I'm using
-    // https://stackoverflow.com/questions/64283656/nodejs-getaddrinfo-enotfound-uncaught
-    // M.post('statuses', params)
-    //     .then( function (result) {
-            console.log('success! :)')
-            rspCode = 200
-            data = {id:7890, created_at:"your mom"}
-            instanceURL = "website.com"
-            switch (true) {
-                case (rspCode >= 200 && rspCode < 300):
-                    //SUCCESS
-                    console.log(`here is the toot on ${instanceURL}:`) 
-                    console.log(`ID: ${data.id} and timestamp: ${data.created_at}`);
-                    break
-                default:
-                    console.log("request failed, response.statusCode= " + rspCode)
-                    console.log("decrementing songNumber")
-                    //write the old songNum back into the file
-                    updateSongNum(oldSongNumStr)
-                    process.exit(rspCode)
-            }
-        // })
-        // .catch( function (err) {
-        //     console.log("request failed, apiError = " + err)
-        //     console.log(err.stack)
-        //     console.log("decrementing songNumber")
-        //     //write the old songNum back into the file
-        //     updateSongNum(oldSongNumStr)
-        //     process.exit(2)
-        // })
+    M.post('statuses', params, (err, data, response) => {
+        mastodonCallback(err, data, response, M.apiUrl)
+    });
 }
 
 function mastodonCallback(post_err, data, response, instanceURL) {
@@ -177,7 +146,8 @@ function mastodonCallback(post_err, data, response, instanceURL) {
             case (rspCode >= 200 && rspCode < 300):
                 //SUCCESS
                 console.log(`here is the toot on ${instanceURL}:`) 
-                console.log(`ID: ${data.id} and timestamp: ${data.created_at}`);            
+                console.log(`ID: ${data.id} and timestamp: ${data.created_at}`)
+                break
             default:
                 console.log("request failed, response.statusCode= " + rspCode)
                 console.log("decrementing songNumber")
@@ -186,7 +156,8 @@ function mastodonCallback(post_err, data, response, instanceURL) {
                 process.exit(1)
         }
     }
-}
+} 
+
 function updateSongNum(currentSongNumStr) {
     try {
         fs.writeFileSync(path1, currentSongNumStr);
