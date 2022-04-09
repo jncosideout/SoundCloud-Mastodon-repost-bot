@@ -5,7 +5,25 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Launch Program",
+            "name": "Launch bot-u-sc",
+            "program": "${workspaceFolder}/bot-u-sc.js",
+            "request": "launch",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "type": "node"
+        },
+        {
+            "name": "Launch daemon",
+            "program": "${workspaceFolder}/bot-daemon.js",
+            "request": "launch",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "type": "pwa-node"
+        },
+        {
+            "name": "Launch bot.js",
             "program": "${workspaceFolder}/bot.js",
             "request": "launch",
             "skipFiles": [
