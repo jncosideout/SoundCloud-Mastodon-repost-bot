@@ -3,7 +3,6 @@ console.log("Mastadon bot starting...");
 const Mastadon = require('mastodon-api');
 const fs = require('fs'),
       es = require('event-stream'),
-      os = require('os'),
       path1 = 'songNumberTEMP.txt',
       path2 = 'scpLikesAndRepostsTEMP.txt',
       path3 = 'totalSongsNumberTEMP.txt';
@@ -120,15 +119,16 @@ function toot(newSong) {
         + newSong + "\n\n" +
         "follow me for more cool electronic music here:\n\n"
         + "https://soundcloud.com/sour_cream_pringles" +
-        "\n\n\n\n" + "#EDM #acid #electro #IDM" + "\n\n"
+        "\n\n\n\n" + "#EDM #acid #electro #IDM" + "\n\n",
+        visibility: "direct"
     }
 
     //DEBUG testing Promises instead of callback
     // seems to work but Uncaught Error: getaddrinfo ENOTFOUND
     // is a bug in the mastodon-api library I'm using
     // https://stackoverflow.com/questions/64283656/nodejs-getaddrinfo-enotfound-uncaught
-    // M.post('statuses', params)
-    //     .then( function (result) {
+    M.post('statuses', params)
+        .then( function (result) {
             console.log('success! :)')
             rspCode = 200
             data = {id:7890, created_at:"your mom"}
@@ -146,15 +146,15 @@ function toot(newSong) {
                     updateSongNum(oldSongNumStr)
                     process.exit(rspCode)
             }
-        // })
-        // .catch( function (err) {
-        //     console.log("request failed, apiError = " + err)
-        //     console.log(err.stack)
-        //     console.log("decrementing songNumber")
-        //     //write the old songNum back into the file
-        //     updateSongNum(oldSongNumStr)
-        //     process.exit(2)
-        // })
+        })
+        .catch( function (err) {
+            console.log("request failed, apiError = " + err)
+            console.log(err.stack)
+            console.log("decrementing songNumber")
+            //write the old songNum back into the file
+            updateSongNum(oldSongNumStr)
+            process.exit(2)
+        })
 }
 
 function mastodonCallback(post_err, data, response, instanceURL) {

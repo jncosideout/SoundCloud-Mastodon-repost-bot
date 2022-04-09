@@ -3,7 +3,6 @@ console.log("Mastodon bot starting...");
 const Mastodon = require('mastodon-api');
 const fs = require('fs'),
       es = require('event-stream'),
-      os = require('os'),
       path1 = 'songNumberTEMP.txt',
       path2 = 'scpLikesAndRepostsTEMP.txt',
       path3 = 'totalSongsNumberTEMP.txt';
