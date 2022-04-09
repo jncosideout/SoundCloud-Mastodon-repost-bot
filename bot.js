@@ -62,12 +62,12 @@ if (songNumber == totalSongNum) {
     console.log('songNumber reset to zero since reached EOF')
 }
 
-const M = new Mastadon({
-    client_key: process.env.M_CLIENT_KEY,
-    client_secret: process.env.M_CLIENT_SECRET,
-    access_token: process.env.M_AUTH_TOKEN,
+const NAS = new Mastadon({
+    client_key: process.env.NAS_CLIENT_KEY,
+    client_secret: process.env.NAS_CLIENT_SECRET,
+    access_token: process.env.NAS_AUTH_TOKEN,
     timeout_ms: 60*1000,  // optional HTTP request timeout to apply to all requests.
-    api_url: 'https://botsin.space/api/v1/', // optional, defaults to https://mastodon.social/api/v1/
+    api_url: 'https://noagendasocial.com/api/v1/', // optional, defaults to https://mastodon.social/api/v1/
 })
 
 
@@ -127,7 +127,7 @@ function toot(newSong) {
     // seems to work but Uncaught Error: getaddrinfo ENOTFOUND
     // is a bug in the mastodon-api library I'm using
     // https://stackoverflow.com/questions/64283656/nodejs-getaddrinfo-enotfound-uncaught
-    // M.post('statuses', params)
+    // NAS.post('statuses', params)
     //     .then( function (result) {
             console.log('success! :)')
             rspCode = 200
