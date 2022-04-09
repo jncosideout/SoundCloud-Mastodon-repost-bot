@@ -129,18 +129,19 @@ function toot(newSong) {
     // https://stackoverflow.com/questions/64283656/nodejs-getaddrinfo-enotfound-uncaught
     M.post('statuses', params)
         .then( function (result) {
-            console.log('success! :)')
-            rspCode = 200
-            data = {id:7890, created_at:"your mom"}
-            instanceURL = "website.com"
+            rspCode = result.resp.statusCode
+            data = result.data
+            headers = result.resp.headers
+            request = result.resp.request
             switch (true) {
-                case (rspCode >= 200 && rspCode < 300):
+                case (rspCode > 199 && rspCode < 300):
                     //SUCCESS
-                    console.log(`here is the toot on ${instanceURL}:`) 
+                    console.log(`here is the toot on ${request.host}:`) 
                     console.log(`ID: ${data.id} and timestamp: ${data.created_at}`);
                     break
                 default:
                     console.log("request failed, response.statusCode= " + rspCode)
+                    console.log(data.error + "\n======================")
                     console.log("decrementing songNumber")
                     //write the old songNum back into the file
                     updateSongNum(oldSongNumStr)
@@ -148,7 +149,8 @@ function toot(newSong) {
             }
         })
         .catch( function (err) {
-            console.log("request failed, apiError = " + err)
+            console.log("M.post failed, error = " )
+            console.log(err.message + "\n=======================")
             console.log(err.stack)
             console.log("decrementing songNumber")
             //write the old songNum back into the file
