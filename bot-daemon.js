@@ -126,7 +126,8 @@ function toot(newSong) {
 function mastodonCallback(post_err, data, response, instanceURL) {
     if (post_err) {
         console.log("an error when tooting, errno=" + post_err.errno)            
-        console.log(post_err)
+        console.log("post_err\n" + post_err)
+        console.log("data.error\n" + data.error)
         console.log("decrementing songNumber")
         //write the old songNum back into the file
         updateSongNum(oldSongNumStr)
@@ -147,6 +148,8 @@ function mastodonCallback(post_err, data, response, instanceURL) {
                 break
             default:
                 console.log("request failed, response.statusCode= " + rspCode)
+                console.log("post_err\n" + post_err)
+                console.log("data.error\n" + data.error)
                 console.log("decrementing songNumber")
                 //write the old songNum back into the file
                 updateSongNum(oldSongNumStr)
