@@ -1,9 +1,8 @@
 require('dotenv').config();
 console.log("Mastodon bot starting...");
-const Mastadon = require('mastodon-api');
+const Mastodon = require('mastodon-api');
 const fs = require('fs'),
       es = require('event-stream'),
-      os = require('os'),
       path1 = 'songNumberTEMP.txt',
       path2 = 'scpLikesAndRepostsTEMP.txt',
       path3 = 'totalSongsNumberTEMP.txt';
@@ -102,9 +101,6 @@ var s = fs.createReadStream(path2)
             console.log('Finished Reading');
             totalSongStr = i.toString();
             currentSongNumStr = i_as_string;
-            // update songNum before posting to Mastodon
-            console.log("incrementing songNumber")
-            updateSongNum(currentSongNumStr)
             // finally, toot the new song
             toot(songToPost);
         })
@@ -128,17 +124,13 @@ function toot(newSong) {
 
 function mastodonCallback(post_err, data, response, instanceURL) {
     if (post_err) {
-        console.log("an error when tooting, errno=" + post_err.errno)            
+        console.log("an error when tooting, errno=" + post_err.errno)
+        console.log("songNumber not changed:" + oldSongNumStr)
         console.log(post_err)
-        console.log("decrementing songNumber")
-        //write the old songNum back into the file
-        updateSongNum(oldSongNumStr)
         process.exit(post_err.errno)
     } else if (data.length < 1) {
         console.log("no data")
-        console.log("decrementing songNumber")
-        //write the old songNum back into the file
-        updateSongNum(oldSongNumStr)
+        console.log("songNumber not changed:" + oldSongNumStr)
         process.exit(1)
     } else {
         rspCode = response.statusCode
@@ -147,12 +139,13 @@ function mastodonCallback(post_err, data, response, instanceURL) {
                 //SUCCESS
                 console.log(`here is the toot on ${instanceURL}:`) 
                 console.log(`ID: ${data.id} and timestamp: ${data.created_at}`)
+                // update songNum after successful post
+                console.log("incrementing songNumber")
+                updateSongNum(currentSongNumStr)
                 break
             default:
                 console.log("request failed, response.statusCode= " + rspCode)
-                console.log("decrementing songNumber")
-                //write the old songNum back into the file
-                updateSongNum(oldSongNumStr)
+                console.log("songNumber not changed:" + oldSongNumStr)
                 process.exit(1)
         }
     }
