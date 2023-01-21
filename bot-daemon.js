@@ -93,8 +93,8 @@ var s = fs.createReadStream(path2)
                 s.resume();                
         })
         .on('error', function(err) {
-            console.log('Error occurred, errno=:' + err.errno + '\n', err);
-            process.exit(err.errno)
+            console.log('Error occurred while reading, errno=:' + err.errno + '\n', err);
+            process.exit(1)
         })
         .on('end', function(){
             console.log('Finished Reading');
@@ -123,10 +123,10 @@ function toot(newSong) {
 function mastodonCallback(post_err, data, response, instanceURL) {
     if (post_err) {
         console.log("an error when tooting, errno=" + post_err.errno)            
-        console.log("post_err\n" + post_err)
-        console.log("data.error\n" + data.error)
+        console.log("post_err is\n" + post_err)
+        console.log("data.error is\n" + data.error)
         console.log("songNumber not changed:" + oldSongNumStr)
-        process.exit(post_err.errno)
+        process.exit(1)
     } else if (data.length < 1) {
         console.log("no data")
         console.log("songNumber not changed:" + oldSongNumStr)
@@ -141,12 +141,11 @@ function mastodonCallback(post_err, data, response, instanceURL) {
                 // update songNum after successful post
                 console.log("incrementing songNumber")
                 updateSongNum(currentSongNumStr)
-
                 break
             default:
                 console.log("request failed, response.statusCode= " + rspCode)
-                console.log("post_err\n" + post_err)
-                console.log("data.error\n" + data.error)
+                console.log("post_err is\n " + post_err)
+                console.log("data.error is\n" + data.error)
                 console.log("songNumber not changed:" + oldSongNumStr)
                 process.exit(1)
         }
@@ -162,6 +161,6 @@ function updateSongNum(currentSongNumStr) {
     } catch(error) {
         console.log("a WRITE error occurred, errno=" + error.errno + "\n")
         console.log(error)
-        process.exit(error.errno)
+        process.exit(1)
     }
 }
