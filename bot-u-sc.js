@@ -95,7 +95,7 @@ var s = fs.createReadStream(path2)
         })
         .on('error', function(err) {
             console.log('Error occurred, errno=:' + err.errno + '\n', err);
-            process.exit(err.errno)
+            process.exit(1)
         })
         .on('end', function(){
             console.log('Finished Reading');
@@ -127,7 +127,7 @@ function mastodonCallback(post_err, data, response, instanceURL) {
         console.log("an error when tooting, errno=" + post_err.errno)
         console.log("songNumber not changed:" + oldSongNumStr)
         console.log(post_err)
-        process.exit(post_err.errno)
+        process.exit(1)
     } else if (data.length < 1) {
         console.log("no data")
         console.log("songNumber not changed:" + oldSongNumStr)
@@ -160,6 +160,6 @@ function updateSongNum(currentSongNumStr) {
     } catch(error) {
         console.log("a WRITE error occurred, errno=" + error.errno + "\n")
         console.log(error)
-        process.exit(error.errno)
+        process.exit(1)
     }
 }

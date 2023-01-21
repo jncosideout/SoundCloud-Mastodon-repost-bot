@@ -102,9 +102,6 @@ var s = fs.createReadStream(path2)
             console.log('Finished Reading');
             totalSongStr = i.toString();
             currentSongNumStr = i_as_string;
-            // update songNum before posting to Mastodon
-            console.log("incrementing songNumber")            
-            updateSongNum(currentSongNumStr)
             // finally, toot the new song
             toot(songToPost);
         })
@@ -138,40 +135,36 @@ function toot(newSong) {
                     //SUCCESS
                     console.log(`here is the toot on ${request.host}:`) 
                     console.log(`ID: ${data.id} and timestamp: ${data.created_at}`);
+                    // update songNum after posting to Mastodon
+                    console.log("incrementing songNumber")            
+                    updateSongNum(currentSongNumStr)
                     break
                 default:
                     console.log("request failed, response.statusCode= " + rspCode)
                     console.log(data.error + "\n======================")
-                    console.log("decrementing songNumber")
-                    //write the old songNum back into the file
-                    updateSongNum(oldSongNumStr)
-                    process.exit(rspCode)
+                    console.log("songNumber not changed:" + oldSongNumStr)
+                    process.exit(1)
             }
         })
         .catch( function (err) {
             console.log("M.post failed, error = " )
             console.log(err.message + "\n=======================")
             console.log(err.stack)
-            console.log("decrementing songNumber")
-            //write the old songNum back into the file
-            updateSongNum(oldSongNumStr)
-            process.exit(2)
+            console.log("songNumber not changed:" + oldSongNumStr)
+            process.exit(1)
         })
 }
 
 function mastodonCallback(post_err, data, response, instanceURL) {
     if (post_err) {
         console.log("an error when tooting, errno=" + post_err.errno)            
-        console.log(post_err)
-        console.log("decrementing songNumber")
-        //write the old songNum back into the file
-        updateSongNum(oldSongNumStr)
-        process.exit(post_err.errno)
+        console.log("post_err is\n" + post_err)
+        console.log("data.error is\n" + data.error)
+        console.log("songNumber not changed:" + oldSongNumStr)
+        process.exit(1)
     } else if (data.length < 1) {
         console.log("no data")
-        console.log("decrementing songNumber")
-        //write the old songNum back into the file
-        updateSongNum(oldSongNumStr)
+        console.log("songNumber not changed:" + oldSongNumStr)
         process.exit(1)
     } else {
         rspCode = response.statusCode
@@ -179,12 +172,16 @@ function mastodonCallback(post_err, data, response, instanceURL) {
             case (rspCode >= 200 && rspCode < 300):
                 //SUCCESS
                 console.log(`here is the toot on ${instanceURL}:`) 
-                console.log(`ID: ${data.id} and timestamp: ${data.created_at}`);            
+                console.log(`ID: ${data.id} and timestamp: ${data.created_at}`);  
+                // update songNum after successful post
+                console.log("incrementing songNumber")
+                updateSongNum(currentSongNumStr)       
+                break   
             default:
                 console.log("request failed, response.statusCode= " + rspCode)
-                console.log("decrementing songNumber")
-                //write the old songNum back into the file
-                updateSongNum(oldSongNumStr)
+                console.log("post_err is\n " + post_err)
+                console.log("data.error is\n" + data.error)
+                console.log("songNumber not changed:" + oldSongNumStr)
                 process.exit(1)
         }
     }
@@ -198,6 +195,6 @@ function updateSongNum(currentSongNumStr) {
     } catch(error) {
         console.log("a WRITE error occurred, errno=" + error.errno + "\n")
         console.log(error)
-        process.exit(error.errno)
+        process.exit(1)
     }
 }
