@@ -124,8 +124,8 @@ function toot(newSong) {
     // seems to work but Uncaught Error: getaddrinfo ENOTFOUND
     // is a bug in the mastodon-api library I'm using
     // https://stackoverflow.com/questions/64283656/nodejs-getaddrinfo-enotfound-uncaught
-    // NAS.post('statuses', params)
-    //     .then( function (result) {
+    NAS.post('statuses', params)
+        .then( function (result) {
             console.log('success! :)')
             rspCode = 200
             data = {id:7890, created_at:"your mom"}
