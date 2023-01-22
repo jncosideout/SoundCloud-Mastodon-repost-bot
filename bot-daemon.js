@@ -62,7 +62,7 @@ if (songNumber == totalSongNum) {
     console.log('songNumber reset to zero since reached EOF')
 }
 
-const NAS = new Mastadon({
+const NAS = new Mastodon({
     client_key: process.env.NAS_CLIENT_KEY,
     client_secret: process.env.NAS_CLIENT_SECRET,
     access_token: process.env.NAS_AUTH_TOKEN,
