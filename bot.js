@@ -103,38 +103,35 @@ var s = fs.createReadStream(path2)
             totalMemeStr = i.toString();
             currentMemeNumStr = i_as_string;
             // finally, toot the new meme
-            toot(memeToPost);
+            upload(memeToPost)
+                .then((result) => {
+                    rspCode1 = result.responseCode
+                    params = result.params
+                    toot(rspCode1, params)
+                })
+                .catch( function (err) {
+                    console.log("reject after upload(memeToPost), error = " )
+                    console.log(err.message + "\n=======================")
+                    console.log(err.stack)
+                    console.log("memeNumber not changed:" + oldMemeNumStr)
+                    process.exit(1)
+                });
         })
     );
 
-
-
-
-function toot(newMeme) {
-    const params = {
-        status: "NW Houston NA Meetup #8: ⬇️\n\n"
-        + newMeme + "\n\n" +
-        "⬇️ \n\n"
-        + "" +
-        "\n\n" + "#" + "\n\n\n\n" +
-        "",
-        visibility: "direct"
-    }
-
-    //DEBUG testing Promises instead of callback
-    // seems to work but Uncaught Error: getaddrinfo ENOTFOUND
-    // is a bug in the mastodon-api library I'm using
-    // https://stackoverflow.com/questions/64283656/nodejs-getaddrinfo-enotfound-uncaught
-    NAS.post('statuses', params)
-        .then( function (promiseObject) {
-            console.log('success! :)')
-            data = promiseObject.data
-            resp = promiseObject.resp
+async function toot(rspCode1, params) {
+    switch (true) {
+        case (rspCode1 > 199 && rspCode1 < 300):
+            result = await NAS.post('statuses', params)
+            data = result.data
+            resp = result.resp
             rspCode = resp.status
             instanceURL = NAS.apiUrl
             switch (true) {
+                // status message POST
                 case (rspCode > 199 && rspCode < 300):
                     //SUCCESS
+                    console.log('success! :)')
                     console.log(`here is the toot on ${instanceURL}:`) 
                     console.log(`ID: ${data.id} and timestamp: ${data.created_at}`);
                     // update memeNum after posting to Mastodon
@@ -142,14 +139,55 @@ function toot(newMeme) {
                     updateMemeNum(currentMemeNumStr)
                     break
                 default:
-                    console.log("request failed, response.statusCode= " + rspCode + " " + resp.statusText)
-                    console.log(data.error + "\n======================")
+                    console.log("request failed, rspCode= " + rspCode + " status " + resp.statusText)
+                    // console.log(data.error + "\n======================")
                     console.log("memeNumber not changed:" + oldMemeNumStr)
                     process.exit(1)
             }
+            break
+        // media upload POST failed
+        default:
+            console.log("media upload failed")
+            console.log("media upload http rspCode1.statusCode= " + rspCode1 + " status " + resp1.statusText)
+            console.log("memeNumber not changed:" + oldMemeNumStr)
+            process.exit(1)
+    }
+}
+
+
+async function upload(newMeme) {
+    //DEBUG testing Promises instead of callback
+    // seems to work but Uncaught Error: getaddrinfo ENOTFOUND
+    // is a bug in the mastodon-api library I'm using
+    // https://stackoverflow.com/questions/64283656/nodejs-getaddrinfo-enotfound-uncaught
+    return await NAS.post("media", { file: fs.createReadStream(newMeme) })
+        .then((response) => {
+            data1 = response.data
+            resp1 = response.resp
+            rspCode = resp1.status
+            mediaID = data1.id
+            const params = {
+                status: "🥳 😵 The 8th Northwest Houston\n" +
+                        "           No Agenda Meetup! 😎\n\n" +
+                        "https://noagendameetups.com/event/the-8th-northwest-houston-na-meetup/" +
+                        "\n\n" +
+                        "🌎 Where:\n" +
+                        "- Wakefield Crowbar\n" +
+                        "🕔 When\n" +
+                        "- Saturday Feb. 03\n" +
+                        " 🤠  🇨🇱 🌵 🦂 🚀\n" +
+                        "#NorthwestHoustonNoAgendaMeetups",
+                media_ids: [mediaID],
+                visibility: "direct"
+            }
+
+            return {params: params, responseCode: rspCode}
+  
         })
+        // media upload POST
         .catch( function (err) {
-            console.log("T.post failed, error = " )
+            console.log("T.post or createReadStream for media upload failed failed, error = " )
+            console.log("response.statusCode= " + rspCode1 + " status" + resp1.statusText)
             console.log(err.message + "\n=======================")
             console.log(err.stack)
             console.log("memeNumber not changed:" + oldMemeNumStr)
