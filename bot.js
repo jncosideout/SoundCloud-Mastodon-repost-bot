@@ -3,62 +3,62 @@ console.log("Mastodon bot starting...");
 const Tusk = require('tusk-mastodon');
 const fs = require('fs'),
       es = require('event-stream'),
-      path1 = 'songNumberTEMP.txt',
-      path2 = 'scpLikesAndRepostsTEMP.txt',
-      path3 = 'totalSongsNumberTEMP.txt';
-var songToPost = "",
+      path1 = 'memeNumberTEMP.txt',
+      path2 = 'NWHouNAMeetupMemesTEMP.txt',
+      path3 = 'totalMemesNumberTEMP.txt';
+var memeToPost = "",
 
-    songNumber = 0,
-    songNumData = [],
-    currentSongNumStr = "",
+    memeNumber = 0,
+    memeNumData = [],
+    currentMemeNumStr = "",
     //in case we fail to post, store the old num
-    oldSongNumStr = ""
+    oldMemeNumStr = ""
     i_as_string = "",
     
-    totalSongNum = 0,
-    totalSongNumData = [],
-    totalSongStr = "";    
+    totalMemeNum = 0,
+    totalMemeNumData = [],
+    totalMemeStr = "";    
 
 try {
-    songNumData = fs.readFileSync(path1);
-    totalSongNumData = fs.readFileSync(path3);
+    memeNumData = fs.readFileSync(path1);
+    totalMemeNumData = fs.readFileSync(path3);
 } catch (error) {
     console.log("a READ error occurred, errno=" + error.errno + "\n")
     console.log(error)
     process.exit(error.errno);    
 }
 
-if (songNumData.length != 0) {
-    songNumData.forEach(i => {
-        currentSongNumStr += String.fromCharCode(i);
-        oldSongNumStr = currentSongNumStr
+if (memeNumData.length != 0) {
+    memeNumData.forEach(i => {
+        currentMemeNumStr += String.fromCharCode(i);
+        oldMemeNumStr = currentMemeNumStr
     });
 } else {
-    console.log('songNumData was empty');
+    console.log('memeNumData was empty');
     console.log('make sure bot-daemon.js has read access')
     process.exit(1);
 }
-console.log("song number is: " + songNumData);
-// the actual song read will be songNumber + 1
-songNumber = parseInt(currentSongNumStr);
+console.log("meme number is: " + memeNumData);
+// the actual meme read will be memeNumber + 1
+memeNumber = parseInt(currentMemeNumStr);
 
 
-if (totalSongNumData.length != 0) {
-    totalSongNumData.forEach(i => {
-        totalSongStr += String.fromCharCode(i);
+if (totalMemeNumData.length != 0) {
+    totalMemeNumData.forEach(i => {
+        totalMemeStr += String.fromCharCode(i);
     });  
 } else {
-    console.log('totalSongNumData was empty');
+    console.log('totalMemeNumData was empty');
     console.log('make sure bot-daemon.js has read access');
     process.exit(1);
 }
 
-console.log("total songs number is: " + totalSongNumData);
-totalSongNum = parseInt(totalSongStr);
+console.log("total memes number is: " + totalMemeNumData);
+totalMemeNum = parseInt(totalMemeStr);
 
-if (songNumber == totalSongNum) {
-    songNumber = 0;
-    console.log('songNumber reset to zero since reached EOF')
+if (memeNumber == totalMemeNum) {
+    memeNumber = 0;
+    console.log('memeNumber reset to zero since reached EOF')
 }
 
 const NAS = new Tusk({
@@ -75,20 +75,20 @@ var i = 0;
 
 var s = fs.createReadStream(path2)
     .pipe(es.split())
-    .pipe(es.mapSync(function(song) {
+    .pipe(es.mapSync(function(meme) {
                 // pause the readstream
                 s.pause();
                 
-                // the stream reads past the end of the file, causing a blank song to be read
+                // the stream reads past the end of the file, causing a blank meme to be read
                 // so to keep the total to not be counted one above the actual total,
                 // only increment if not blank
-                if (song != '') {
+                if (meme != '') {
                     i++;
                 }
 
-                if (i > songNumber && i_as_string == "") {
-                    console.log('songToPost = ' + song);
-                    songToPost = song;                   
+                if (i > memeNumber && i_as_string == "") {
+                    console.log('memeToPost = ' + meme);
+                    memeToPost = meme;                   
                     i_as_string = i.toString();
                 } 
 
@@ -100,17 +100,17 @@ var s = fs.createReadStream(path2)
         })
         .on('end', function(){
             console.log('Finished Reading');
-            totalSongStr = i.toString();
-            currentSongNumStr = i_as_string;
-            // finally, toot the new song
-            toot(songToPost);
+            totalMemeStr = i.toString();
+            currentMemeNumStr = i_as_string;
+            // finally, toot the new meme
+            toot(memeToPost);
         })
     );
 
 
 
 
-function toot(newSong) {
+function toot(newMeme) {
     const params = {
         status: "NW Houston NA Meetup #8: ⬇️\n\n"
         + newMeme + "\n\n" +
@@ -137,14 +137,14 @@ function toot(newSong) {
                     //SUCCESS
                     console.log(`here is the toot on ${instanceURL}:`) 
                     console.log(`ID: ${data.id} and timestamp: ${data.created_at}`);
-                    // update songNum after posting to Mastodon
-                    console.log("incrementing songNumber")            
-                    updateSongNum(currentSongNumStr)
+                    // update memeNum after posting to Mastodon
+                    console.log("incrementing memeNumber")            
+                    updateMemeNum(currentMemeNumStr)
                     break
                 default:
-                    console.log("request failed, response.statusCode= " + rspCode)
+                    console.log("request failed, response.statusCode= " + rspCode + " " + resp.statusText)
                     console.log(data.error + "\n======================")
-                    console.log("songNumber not changed:" + oldSongNumStr)
+                    console.log("memeNumber not changed:" + oldMemeNumStr)
                     process.exit(1)
             }
         })
@@ -152,7 +152,7 @@ function toot(newSong) {
             console.log("T.post failed, error = " )
             console.log(err.message + "\n=======================")
             console.log(err.stack)
-            console.log("songNumber not changed:" + oldSongNumStr)
+            console.log("memeNumber not changed:" + oldMemeNumStr)
             process.exit(1)
         })
 }
@@ -162,11 +162,11 @@ function mastodonCallback(post_err, data, response, instanceURL) {
         console.log("an error when tooting, errno=" + post_err.errno)            
         console.log("post_err is\n" + post_err)
         console.log("data.error is\n" + data.error)
-        console.log("songNumber not changed:" + oldSongNumStr)
+        console.log("memeNumber not changed:" + oldMemeNumStr)
         process.exit(1)
     } else if (data.length < 1) {
         console.log("no data")
-        console.log("songNumber not changed:" + oldSongNumStr)
+        console.log("memeNumber not changed:" + oldMemeNumStr)
         process.exit(1)
     } else {
         rspCode = response.statusCode
@@ -175,25 +175,25 @@ function mastodonCallback(post_err, data, response, instanceURL) {
                 //SUCCESS
                 console.log(`here is the toot on ${instanceURL}:`) 
                 console.log(`ID: ${data.id} and timestamp: ${data.created_at}`);  
-                // update songNum after successful post
-                console.log("incrementing songNumber")
-                updateSongNum(currentSongNumStr)       
+                // update memeNum after successful post
+                console.log("incrementing memeNumber")
+                updateMemeNum(currentMemeNumStr)       
                 break   
             default:
                 console.log("request failed, response.statusCode= " + rspCode)
                 console.log("post_err is\n " + post_err)
                 console.log("data.error is\n" + data.error)
-                console.log("songNumber not changed:" + oldSongNumStr)
+                console.log("memeNumber not changed:" + oldMemeNumStr)
                 process.exit(1)
         }
     }
 }
-function updateSongNum(currentSongNumStr) {
+function updateMemeNum(currentMemeNumStr) {
     try {
-        fs.writeFileSync(path1, currentSongNumStr);
-        console.log('songNumber changed to ' + currentSongNumStr); 
-        fs.writeFileSync(path3, totalSongStr);
-        console.log('total songs = ' + totalSongStr);
+        fs.writeFileSync(path1, currentMemeNumStr);
+        console.log('memeNumber changed to ' + currentMemeNumStr); 
+        fs.writeFileSync(path3, totalMemeStr);
+        console.log('total memes = ' + totalMemeStr);
     } catch(error) {
         console.log("a WRITE error occurred, errno=" + error.errno + "\n")
         console.log(error)
