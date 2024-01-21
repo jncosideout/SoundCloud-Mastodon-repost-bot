@@ -1,6 +1,6 @@
 require('dotenv').config();
 console.log("Mastodon bot starting...");
-const Mastodon = require('mastodon-api');
+const Tusk = require('tusk-mastodon');
 const fs = require('fs'),
       es = require('event-stream'),
       path1 = 'songNumberTEMP.txt',
@@ -62,12 +62,12 @@ if (songNumber == totalSongNum) {
     console.log('songNumber reset to zero since reached EOF')
 }
 
-const M = new Mastodon({
-    client_key: process.env.M_CLIENT_KEY,
-    client_secret: process.env.M_CLIENT_SECRET,
-    access_token: process.env.M_AUTH_TOKEN,
+const NAS = new Tusk({
+    client_key: process.env.NAU_CLIENT_KEY,
+    client_secret: process.env.NAU_CLIENT_SECRET,
+    access_token: process.env.NAU_AUTH_TOKEN,
     timeout_ms: 60*1000,  // optional HTTP request timeout to apply to all requests.
-    api_url: 'https://botsin.space/api/v1/', // optional, defaults to https://mastodon.social/api/v1/
+    api_url: 'https://noauthority.social/api/v1/', // optional, defaults to https://mastodon.social/api/v1/n
 })
 
 var i = 0;
@@ -108,12 +108,12 @@ var s = fs.createReadStream(path2)
 
 function toot(newSong) {
     const params = {
-        status: "this song came from  my feed on SoundCloud: ⬇️\n\n"
+        status: "NW Houston NA Meetup #8: ⬇️\n\n"
         + newSong + "\n\n" +
-        "for more cool electronic music go here: ⬇️ \n\n"
-        + "https://soundcloud.com/sour_cream_pringles" +
-        "\n\n" + "#EDM #acid #electro #IDM" + "\n\n\n\n" +
-        "♬♫♪ ヽ(⌐■_■)ﾉ ♪♫♬",
+        "⬇️ \n\n"
+        + "" +
+        "\n\n" + "#" + "\n\n\n\n" +
+        "",
         visibility: "direct"
     }
 
@@ -131,7 +131,7 @@ function mastodonCallback(post_err, data, response, instanceURL) {
     } else if (data.length < 1) {
         console.log("no data")
         console.log("songNumber not changed:" + oldSongNumStr)
-        process.exit(1)
+        process.exit(1)``
     } else {
         rspCode = response.statusCode
         switch (true) {
