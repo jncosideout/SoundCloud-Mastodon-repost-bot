@@ -125,16 +125,17 @@ function toot(newSong) {
     // seems to work but Uncaught Error: getaddrinfo ENOTFOUND
     // is a bug in the mastodon-api library I'm using
     // https://stackoverflow.com/questions/64283656/nodejs-getaddrinfo-enotfound-uncaught
-    M.post('statuses', params)
-        .then( function (result) {
-            rspCode = result.resp.statusCode
-            data = result.data
-            headers = result.resp.headers
-            request = result.resp.request
+    NAS.post('statuses', params)
+        .then( function (promiseObject) {
+            console.log('success! :)')
+            data = promiseObject.data
+            resp = promiseObject.resp
+            rspCode = resp.status
+            instanceURL = NAS.apiUrl
             switch (true) {
                 case (rspCode > 199 && rspCode < 300):
                     //SUCCESS
-                    console.log(`here is the toot on ${request.host}:`) 
+                    console.log(`here is the toot on ${instanceURL}:`) 
                     console.log(`ID: ${data.id} and timestamp: ${data.created_at}`);
                     // update songNum after posting to Mastodon
                     console.log("incrementing songNumber")            
@@ -148,7 +149,7 @@ function toot(newSong) {
             }
         })
         .catch( function (err) {
-            console.log("M.post failed, error = " )
+            console.log("T.post failed, error = " )
             console.log(err.message + "\n=======================")
             console.log(err.stack)
             console.log("songNumber not changed:" + oldSongNumStr)
