@@ -3,9 +3,9 @@ console.log("Mastodon bot starting...");
 const Tusk = require('tusk-mastodon');
 const fs = require('fs'),
       es = require('event-stream'),
-      path1 = 'memeNumberTEMP.txt',
-      path2 = 'NWHouNAMeetupMemesTEMP.txt',
-      path3 = 'totalMemesNumberTEMP.txt';
+      path1 = 'memeNumber.txt',
+      path2 = 'NWHouNAMeetupMemes.txt',
+      path3 = 'totalMemesNumber.txt';
 var memeToPost = "",
 
     memeNumber = 0,
@@ -177,8 +177,7 @@ async function upload(newMeme) {
                         "- Saturday Feb. 03\n" +
                         " 🤠  🇨🇱 🌵 🦂 🚀\n" +
                         "#NorthwestHoustonNoAgendaMeetups",
-                media_ids: [mediaID],
-                visibility: "direct"
+                media_ids: [mediaID]
             }
 
             return {params: params, responseCode: rspCode}
