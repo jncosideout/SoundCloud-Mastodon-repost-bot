@@ -3,9 +3,9 @@ console.log("Mastodon bot starting...");
 const Tusk = require('tusk-mastodon');
 const fs = require('fs'),
       es = require('event-stream'),
-      path1 = 'songNumberTEMP.txt',
-      path2 = 'scpLikesAndRepostsTEMP.txt',
-      path3 = 'totalSongsNumberTEMP.txt';
+      path1 = 'songNumber.txt',
+      path2 = 'scpLikesAndReposts.txt',
+      path3 = 'totalSongsNumber.txt';
 var songToPost = "",
 
     songNumber = 0,
@@ -112,8 +112,7 @@ function toot(newSong) {
         "for more cool electronic music go here: ⬇️ \n\n"
         + "https://soundcloud.com/sour_cream_pringles" +
         "\n\n" + "#EDM #acid #electro #IDM" + "\n\n\n\n" +
-        "♬♫♪ ヽ(⌐■_■)ﾉ ♪♫♬",
-        visibility: "direct"
+        "♬♫♪ ヽ(⌐■_■)ﾉ ♪♫♬"
     }
 
     //DEBUG testing Promises instead of callback
@@ -122,7 +121,6 @@ function toot(newSong) {
     // https://stackoverflow.com/questions/64283656/nodejs-getaddrinfo-enotfound-uncaught
     NAS.post('statuses', params)
         .then( function (promiseObject) {
-            console.log('success! :)')
             data = promiseObject.data
             resp = promiseObject.resp
             rspCode = resp.status
@@ -130,6 +128,7 @@ function toot(newSong) {
             switch (true) {
                 case (rspCode > 199 && rspCode < 300):
                     //SUCCESS
+                    console.log('success! :)')
                     console.log(`here is the toot on ${instanceURL}:`)      
                     console.log(`ID: ${data.id} and timestamp: ${data.created_at}`)
                     // update songNum after posting to Mastodon
