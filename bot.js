@@ -1,6 +1,6 @@
 require('dotenv').config();
 console.log("Mastodon bot starting...");
-const Mastodon = require('mastodon-api');
+const Tusk = require('tusk-mastodon');
 const fs = require('fs'),
       es = require('event-stream'),
       path1 = 'songNumberTEMP.txt',
@@ -13,6 +13,7 @@ var songToPost = "",
     currentSongNumStr = "",
     //in case we fail to post, store the old num
     oldSongNumStr = ""
+
     i_as_string = "",
     
     totalSongNum = 0,
@@ -61,18 +62,15 @@ if (songNumber == totalSongNum) {
     console.log('songNumber reset to zero since reached EOF')
 }
 
-const NAS = new Mastodon({
-    client_key: process.env.NAS_CLIENT_KEY,
-    client_secret: process.env.NAS_CLIENT_SECRET,
-    access_token: process.env.NAS_AUTH_TOKEN,
+const NAS = new Tusk({
+    client_key: process.env.NAU_CLIENT_KEY,
+    client_secret: process.env.NAU_CLIENT_SECRET,
+    access_token: process.env.NAU_AUTH_TOKEN,
     timeout_ms: 60*1000,  // optional HTTP request timeout to apply to all requests.
-    api_url: 'https://noagendasocial.com/api/v1/', // optional, defaults to https://mastodon.social/api/v1/
+    api_url: 'https://noauthority.social/api/v1/', // optional, defaults to https://mastodon.social/api/v1/n
 })
 
-
-
 var i = 0;
-
 var s = fs.createReadStream(path2)
     .pipe(es.split())
     .pipe(es.mapSync(function(song) {
@@ -95,8 +93,8 @@ var s = fs.createReadStream(path2)
                 s.resume();                
         })
         .on('error', function(err) {
-            console.log('Error occurred, errno=:' + err.errno + '\n', err);
-            process.exit(err.errno)
+            console.log('Error occurred while reading, errno=:' + err.errno + '\n', err);
+            process.exit(1)
         })
         .on('end', function(){
             console.log('Finished Reading');
@@ -107,16 +105,14 @@ var s = fs.createReadStream(path2)
         })
     );
 
-
-
-
 function toot(newSong) {
     const params = {
-        status: "this song came from  my feed on SoundCloud\n\n"
+        status: "this song came from  my feed on SoundCloud: ⬇️\n\n"
         + newSong + "\n\n" +
-        "follow me for more cool electronic music here:\n\n"
+        "for more cool electronic music go here: ⬇️ \n\n"
         + "https://soundcloud.com/sour_cream_pringles" +
-        "\n\n\n\n" + "#EDM #acid #electro #IDM" + "\n\n",
+        "\n\n" + "#EDM #acid #electro #IDM" + "\n\n\n\n" +
+        "♬♫♪ ヽ(⌐■_■)ﾉ ♪♫♬",
         visibility: "direct"
     }
 
@@ -125,16 +121,17 @@ function toot(newSong) {
     // is a bug in the mastodon-api library I'm using
     // https://stackoverflow.com/questions/64283656/nodejs-getaddrinfo-enotfound-uncaught
     NAS.post('statuses', params)
-        .then( function (result) {
+        .then( function (promiseObject) {
             console.log('success! :)')
-            rspCode = 200
-            data = {id:7890, created_at:"your mom"}
-            instanceURL = "website.com"
+            data = promiseObject.data
+            resp = promiseObject.resp
+            rspCode = resp.status
+            instanceURL = NAS.apiUrl
             switch (true) {
                 case (rspCode > 199 && rspCode < 300):
                     //SUCCESS
-                    console.log(`here is the toot on ${request.host}:`) 
-                    console.log(`ID: ${data.id} and timestamp: ${data.created_at}`);
+                    console.log(`here is the toot on ${instanceURL}:`)      
+                    console.log(`ID: ${data.id} and timestamp: ${data.created_at}`)
                     // update songNum after posting to Mastodon
                     console.log("incrementing songNumber")            
                     updateSongNum(currentSongNumStr)
