@@ -11,7 +11,8 @@
             "skipFiles": [
                 "<node_internals>/**"
             ],
-            "type": "pwa-node"
+            "type": "node",
+            "runtimeExecutable" : "/home/alexb/.nvm/versions/node/v14.21.3/bin/node"
         },
         {
             "name": "Launch Prog test bot.js",
@@ -20,7 +21,7 @@
             "skipFiles": [
                 "<node_internals>/**"
             ],
-            "type": "pwa-node"
+            "type": "node"
         },
         {
             "name": "Attach by Process ID",
@@ -29,7 +30,7 @@
             "skipFiles": [
                 "<node_internals>/**"
             ],
-            "type": "pwa-node"
+            "type": "node"
         },
 
         {
@@ -39,10 +40,10 @@
             "skipFiles": [
                 "<node_internals>/**"
             ],
-            "type": "pwa-node"
+            "type": "node"
         },
         {
-            "type": "pwa-chrome",
+            "type": "chrome",
             "request": "launch",
             "name": "Launch Chrome against localhost",
             "url": "http://localhost:8080",
