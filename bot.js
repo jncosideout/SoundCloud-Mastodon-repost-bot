@@ -105,9 +105,9 @@ var s = fs.createReadStream(path2)
             // finally, toot the new meme
             upload(memeToPost)
                 .then((result) => {
-                    rspCode1 = result.responseCode
+                    respCode = result.responseCode
                     params = result.params
-                    toot(rspCode1, params)
+                    toot(respCode, params)
                 })
                 .catch( function (err) {
                     console.log("reject after upload(memeToPost), error = " )
@@ -166,6 +166,7 @@ async function upload(newMeme) {
             resp1 = response.resp
             rspCode = resp1.status
             mediaID = data1.id
+            console.log(` NAS.post(media) Success rspCode=${rspCode} mediaID=${mediaID}`)
             const params = {
                 status: "🥳 😵 The 8th Northwest Houston\n" +
                         "           No Agenda Meetup! 😎\n\n" +
@@ -185,8 +186,8 @@ async function upload(newMeme) {
         })
         // media upload POST
         .catch( function (err) {
-            console.log("T.post or createReadStream for media upload failed failed, error = " )
-            console.log("response.statusCode= " + rspCode1 + " status" + resp1.statusText)
+            console.log(" NAS.post(media) or createReadStream for media upload failed failed, error = " )
+            console.log("response.statusCode= " + rspCode + " status" + resp1.statusText)
             console.log(err.message + "\n=======================")
             console.log(err.stack)
             console.log("memeNumber not changed:" + oldMemeNumStr)
@@ -194,37 +195,6 @@ async function upload(newMeme) {
         })
 }
 
-function mastodonCallback(post_err, data, response, instanceURL) {
-    if (post_err) {
-        console.log("an error when tooting, errno=" + post_err.errno)            
-        console.log("post_err is\n" + post_err)
-        console.log("data.error is\n" + data.error)
-        console.log("memeNumber not changed:" + oldMemeNumStr)
-        process.exit(1)
-    } else if (data.length < 1) {
-        console.log("no data")
-        console.log("memeNumber not changed:" + oldMemeNumStr)
-        process.exit(1)
-    } else {
-        rspCode = response.statusCode
-        switch (true) {
-            case (rspCode >= 200 && rspCode < 300):
-                //SUCCESS
-                console.log(`here is the toot on ${instanceURL}:`) 
-                console.log(`ID: ${data.id} and timestamp: ${data.created_at}`);  
-                // update memeNum after successful post
-                console.log("incrementing memeNumber")
-                updateMemeNum(currentMemeNumStr)       
-                break   
-            default:
-                console.log("request failed, response.statusCode= " + rspCode)
-                console.log("post_err is\n " + post_err)
-                console.log("data.error is\n" + data.error)
-                console.log("memeNumber not changed:" + oldMemeNumStr)
-                process.exit(1)
-        }
-    }
-}
 function updateMemeNum(currentMemeNumStr) {
     try {
         fs.writeFileSync(path1, currentMemeNumStr);
