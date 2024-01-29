@@ -121,6 +121,7 @@ var s = fs.createReadStream(path2)
 
 async function toot(rspCode1, params) {
     switch (true) {
+        // image upload response code
         case (rspCode1 > 199 && rspCode1 < 300):
             result = await NAS.post('statuses', params)
             data = result.data
@@ -139,8 +140,12 @@ async function toot(rspCode1, params) {
                     updateMemeNum(currentMemeNumStr)
                     break
                 default:
+                    console.log("NAS.post('statuses') failed")
                     console.log("request failed, rspCode= " + rspCode + " status " + resp.statusText)
-                    // console.log(data.error + "\n======================")
+                    if (data.error) {
+                        console.log("data.error \n======================")
+                        console.log(data.error)
+                    }
                     console.log("memeNumber not changed:" + oldMemeNumStr)
                     process.exit(1)
             }
@@ -186,8 +191,8 @@ async function upload(newMeme) {
         })
         // media upload POST
         .catch( function (err) {
-            console.log(" NAS.post(media) or createReadStream for media upload failed failed, error = " )
-            console.log("response.statusCode= " + rspCode + " status" + resp1.statusText)
+            console.log(" NAS.post(media) or createReadStream for media upload failed" )
+            console.log("response.statusCode= " + err.statusCode + " err.code " + err.code)
             console.log(err.message + "\n=======================")
             console.log(err.stack)
             console.log("memeNumber not changed:" + oldMemeNumStr)
