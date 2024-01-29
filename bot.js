@@ -136,14 +136,16 @@ function toot(newSong) {
                     updateSongNum(currentSongNumStr)
                     break
                 default:
-                    console.log("request failed, response.statusCode= " + rspCode)
-                    console.log(data.error + "\n======================")
+                    console.log(`request failed, response.statusCode= ${rspCode} statusText ${resp.statusText}`)
                     console.log("songNumber not changed:" + oldSongNumStr)
                     process.exit(1)
             }
         })
         .catch( function (err) {
-            console.log("M.post failed, error = " )
+            console.log("NAS.post('statuses') failed, error = " )
+            if (err.statusCode || err.code) {
+                console.log(`statusCode= ${err.statusCode} err.code ${err.code}`)
+            }
             console.log(err.message + "\n=======================")
             console.log(err.stack)
             console.log("songNumber not changed:" + oldSongNumStr)
