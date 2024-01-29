@@ -105,9 +105,9 @@ var s = fs.createReadStream(path2)
             // finally, toot the new meme
             upload(memeToPost)
                 .then((result) => {
-                    respCode = result.responseCode
+                    mediaResponse = result.mediaResponse
                     params = result.params
-                    toot(respCode, params)
+                    toot(mediaResponse, params)
                 })
                 .catch( function (err) {
                     console.log("reject after upload(memeToPost), error = " )
@@ -119,32 +119,35 @@ var s = fs.createReadStream(path2)
         })
     );
 
-async function toot(rspCode1, params) {
+async function toot(mediaUploadResp, params) {
+    media_responseCode = mediaUploadResp.status
+
     switch (true) {
         // image upload response code
-        case (rspCode1 > 199 && rspCode1 < 300):
+        case (media_responseCode > 199 && media_responseCode < 300):
             result = await NAS.post('statuses', params)
-            data = result.data
-            resp = result.resp
-            rspCode = resp.status
+            status_data = result.data
+            status_resp = result.resp
+            status_responseCode = status_resp.status
             instanceURL = NAS.apiUrl
+
             switch (true) {
                 // status message POST
-                case (rspCode > 199 && rspCode < 300):
+                case (status_responseCode > 199 && status_responseCode < 300):
                     //SUCCESS
                     console.log('success! :)')
                     console.log(`here is the toot on ${instanceURL}:`) 
-                    console.log(`ID: ${data.id} and timestamp: ${data.created_at}`);
+                    console.log(`ID: ${status_data.id} and timestamp: ${status_data.created_at}`);
                     // update memeNum after posting to Mastodon
                     console.log("incrementing memeNumber")            
                     updateMemeNum(currentMemeNumStr)
                     break
                 default:
                     console.log("NAS.post('statuses') failed")
-                    console.log("request failed, rspCode= " + rspCode + " status " + resp.statusText)
-                    if (data.error) {
-                        console.log("data.error \n======================")
-                        console.log(data.error)
+                    console.log("status_responseCode= " + status_responseCode + " statusText " + status_resp.statusText)
+                    if (status_data.error) {
+                        console.log("status_data.error \n======================")
+                        console.log(status_data.error)
                     }
                     console.log("memeNumber not changed:" + oldMemeNumStr)
                     process.exit(1)
@@ -153,7 +156,7 @@ async function toot(rspCode1, params) {
         // media upload POST failed
         default:
             console.log("media upload failed")
-            console.log("media upload http rspCode1.statusCode= " + rspCode1 + " status " + resp1.statusText)
+            console.log("media_responseCode.statusCode= " + media_responseCode + " status " + mediaUploadResp.statusText)
             console.log("memeNumber not changed:" + oldMemeNumStr)
             process.exit(1)
     }
@@ -166,12 +169,12 @@ async function upload(newMeme) {
     // is a bug in the mastodon-api library I'm using
     // https://stackoverflow.com/questions/64283656/nodejs-getaddrinfo-enotfound-uncaught
     return await NAS.post("media", { file: fs.createReadStream(newMeme) })
-        .then((response) => {
-            data1 = response.data
-            resp1 = response.resp
-            rspCode = resp1.status
-            mediaID = data1.id
-            console.log(` NAS.post(media) Success rspCode=${rspCode} mediaID=${mediaID}`)
+        .then((result) => {
+            media_data = result.data
+            mediaUploadResp = result.resp
+            media_RespCode = mediaUploadResp.status
+            mediaID = media_data.id
+            console.log(` NAS.post(media) Success media_RespCode=${media_RespCode} mediaID=${mediaID}`)
             const params = {
                 status: "🥳 😵 The 8th Northwest Houston\n" +
                         "           No Agenda Meetup! 😎\n\n" +
@@ -186,13 +189,13 @@ async function upload(newMeme) {
                 media_ids: [mediaID]
             }
 
-            return {params: params, responseCode: rspCode}
+            return {params: params, mediaResponse: mediaUploadResp}
   
         })
         // media upload POST
         .catch( function (err) {
             console.log(" NAS.post(media) or createReadStream for media upload failed" )
-            console.log("response.statusCode= " + err.statusCode + " err.code " + err.code)
+            console.log("statusCode= " + err.statusCode + " err.code " + err.code)
             console.log(err.message + "\n=======================")
             console.log(err.stack)
             console.log("memeNumber not changed:" + oldMemeNumStr)
