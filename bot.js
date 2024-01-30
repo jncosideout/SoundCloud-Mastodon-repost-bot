@@ -1,11 +1,11 @@
 require('dotenv').config();
-console.log("Mastadon bot starting...");
-const Mastadon = require('mastodon-api');
+console.log("Mastodon bot starting...");
+const Tusk = require('tusk-mastodon');
 const fs = require('fs'),
       es = require('event-stream'),
-      path1 = 'songNumberTEMP.txt',
-      path2 = 'scpLikesAndRepostsTEMP.txt',
-      path3 = 'totalSongsNumberTEMP.txt';
+      path1 = 'songNumber.txt',
+      path2 = 'scpLikesAndReposts.txt',
+      path3 = 'totalSongsNumber.txt';
 var songToPost = "",
 
     songNumber = 0,
@@ -13,6 +13,7 @@ var songToPost = "",
     currentSongNumStr = "",
     //in case we fail to post, store the old num
     oldSongNumStr = ""
+
     i_as_string = "",
     
     totalSongNum = 0,
@@ -61,18 +62,15 @@ if (songNumber == totalSongNum) {
     console.log('songNumber reset to zero since reached EOF')
 }
 
-const M = new Mastadon({
+const BIS = new Tusk({
     client_key: process.env.M_CLIENT_KEY,
     client_secret: process.env.M_CLIENT_SECRET,
     access_token: process.env.M_AUTH_TOKEN,
     timeout_ms: 60*1000,  // optional HTTP request timeout to apply to all requests.
-    api_url: 'https://botsin.space/api/v1/', // optional, defaults to https://mastodon.social/api/v1/
+    api_url: 'https://botsin.space/api/v1/', // optional, defaults to https://mastodon.social/api/v1/n
 })
 
-
-
 var i = 0;
-
 var s = fs.createReadStream(path2)
     .pipe(es.split())
     .pipe(es.mapSync(function(song) {
@@ -95,8 +93,8 @@ var s = fs.createReadStream(path2)
                 s.resume();                
         })
         .on('error', function(err) {
-            console.log('Error occurred, errno=:' + err.errno + '\n', err);
-            process.exit(err.errno)
+            console.log('Error occurred while reading, errno=:' + err.errno + '\n', err);
+            process.exit(1)
         })
         .on('end', function(){
             console.log('Finished Reading');
@@ -107,47 +105,47 @@ var s = fs.createReadStream(path2)
         })
     );
 
-
-
-
 function toot(newSong) {
     const params = {
-        status: "this song came from  my feed on SoundCloud\n\n"
+        status: "this song came from  my feed on SoundCloud: ⬇️\n\n"
         + newSong + "\n\n" +
-        "follow me for more cool electronic music here:\n\n"
+        "for more cool electronic music go here: ⬇️ \n\n"
         + "https://soundcloud.com/sour_cream_pringles" +
-        "\n\n\n\n" + "#EDM #acid #electro #IDM" + "\n\n",
-        visibility: "direct"
+        "\n\n" + "#EDM #acid #electro #IDM" + "\n\n\n\n" +
+        "♬♫♪ ヽ(⌐■_■)ﾉ ♪♫♬"
     }
 
     //DEBUG testing Promises instead of callback
     // seems to work but Uncaught Error: getaddrinfo ENOTFOUND
     // is a bug in the mastodon-api library I'm using
     // https://stackoverflow.com/questions/64283656/nodejs-getaddrinfo-enotfound-uncaught
-    M.post('statuses', params)
-        .then( function (result) {
-            rspCode = result.resp.statusCode
-            data = result.data
-            headers = result.resp.headers
-            request = result.resp.request
+    BIS.post('statuses', params)
+        .then( function (promiseObject) {
+            data = promiseObject.data
+            resp = promiseObject.resp
+            rspCode = resp.status
+            instanceURL = BIS.apiUrl
             switch (true) {
                 case (rspCode > 199 && rspCode < 300):
                     //SUCCESS
-                    console.log(`here is the toot on ${request.host}:`) 
-                    console.log(`ID: ${data.id} and timestamp: ${data.created_at}`);
+                    console.log('success! :)')
+                    console.log(`here is the toot on ${instanceURL}:`)      
+                    console.log(`ID: ${data.id} and timestamp: ${data.created_at}`)
                     // update songNum after posting to Mastodon
                     console.log("incrementing songNumber")            
                     updateSongNum(currentSongNumStr)
                     break
                 default:
-                    console.log("request failed, response.statusCode= " + rspCode)
-                    console.log(data.error + "\n======================")
+                    console.log(`request failed, response.statusCode= ${rspCode} statusText ${resp.statusText}`)
                     console.log("songNumber not changed:" + oldSongNumStr)
                     process.exit(1)
             }
         })
         .catch( function (err) {
-            console.log("M.post failed, error = " )
+            console.log("BIS.post('statuses') failed, error = " )
+            if (err.statusCode || err.code) {
+                console.log(`statusCode= ${err.statusCode} err.code ${err.code}`)
+            }
             console.log(err.message + "\n=======================")
             console.log(err.stack)
             console.log("songNumber not changed:" + oldSongNumStr)
