@@ -185,7 +185,8 @@ async function upload(newMeme) {
                         "🕔 When\n" +
                         "- Saturday " + process.env.MEETUP_DATE + "\n" +
                         " 🤠  🇨🇱 🌵 🦂 🚀\n" +
-                        "#NorthwestHoustonNoAgendaMeetups",
+                        "#NorthwestHoustonNoAgendaMeetups\n" +
+                        "Please follow the hashtag⬆️  (or mute it ¯\\_(ツ)_/¯ )",
                 media_ids: [mediaID]
             }
 
