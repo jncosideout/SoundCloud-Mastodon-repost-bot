@@ -106,19 +106,19 @@ var s = fs.createReadStream(path2)
     );
 
 function toot(newSong) {
+
+    _visibility = songNumber % 2 == 0 ? 'public' : 'unlisted'
+
     const params = {
         status: "this song came from  my feed on SoundCloud: ⬇️\n\n"
         + newSong + "\n\n" +
         "for more cool electronic music go here: ⬇️ \n\n"
         + "https://soundcloud.com/sour_cream_pringles" +
         "\n\n" + "#EDM #acid #electro #IDM" + "\n\n\n\n" +
-        "♬♫♪ ヽ(⌐■_■)ﾉ ♪♫♬"
+        "♬♫♪ ヽ(⌐■_■)ﾉ ♪♫♬",
+        visibility: _visibility
     }
 
-    //DEBUG testing Promises instead of callback
-    // seems to work but Uncaught Error: getaddrinfo ENOTFOUND
-    // is a bug in the mastodon-api library I'm using
-    // https://stackoverflow.com/questions/64283656/nodejs-getaddrinfo-enotfound-uncaught
     NAS.post('statuses', params)
         .then( function (promiseObject) {
             data = promiseObject.data
