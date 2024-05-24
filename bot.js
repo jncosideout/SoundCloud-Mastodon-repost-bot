@@ -176,17 +176,18 @@ async function upload(newMeme) {
             mediaID = media_data.id
             console.log(` NAS.post(media) Success media_RespCode=${media_RespCode} mediaID=${mediaID}`)
             const params = {
-                status: "🥳 😵 The " + process.env.MEETUP_NUM + " Northwest Houston\n" +
-                        "           No Agenda Meetup! 😎\n\n" +
+                status: ":feelsgoodman: :itm: The " + process.env.MEETUP_NUM + " Northwest Houston\n" +
+                        "           No Agenda Meetup! :vibing_cat: \n\n" +
                         process.env.MEETUP_URL +
-                        "\n\n" +
+                        "\n(👆RSVP is NOW available!!) :pepe_clap:\n" +
+                        "\n:siren: :pepe_happy:\n\n" +
                         "🌎 Where:\n" +
                         "- Wakefield Crowbar\n" +
                         "🕔 When\n" +
                         "- Saturday " + process.env.MEETUP_DATE + "\n" +
                         " 🤠  🇨🇱 🌵 🦂 🚀\n" +
-                        "#NorthwestHoustonNoAgendaMeetups\n" +
-                        "Please follow the hashtag⬆️  (or mute it ¯\\_(ツ)_/¯ )",
+                        "#NorthwestHoustonNoAgendaMeetup\n" +
+                        "Please follow the hashtag⬆️  (or filter it out ¯\\_(ツ)_/¯ )",
                 media_ids: [mediaID]
             }
 
