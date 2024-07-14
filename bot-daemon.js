@@ -1,6 +1,6 @@
 require('dotenv').config();
 console.log("Mastodon bot starting...");
-const Mastodon = require('mastodon-api');
+const Tusk = require('tusk-mastodon');
 const fs = require('fs'),
       es = require('event-stream'),
       path1 = 'songNumber.txt',
@@ -62,7 +62,7 @@ if (songNumber == totalSongNum) {
     console.log('songNumber reset to zero since reached EOF')
 }
 
-const M = new Mastodon({
+const M = new Tusk({
     client_key: process.env.M_CLIENT_KEY,
     client_secret: process.env.M_CLIENT_SECRET,
     access_token: process.env.M_AUTH_TOKEN,
@@ -112,7 +112,8 @@ function toot(newSong) {
         "for more cool electronic music go here: ⬇️ \n\n"
         + "https://soundcloud.com/sour_cream_pringles" +
         "\n\n" + "#EDM #acid #electro #IDM" + "\n\n\n\n" +
-        "♬♫♪ ヽ(⌐■_■)ﾉ ♪♫♬"
+        "♬♫♪ ヽ(⌐■_■)ﾉ ♪♫♬",
+        visibility: "direct"
     }
 
     M.post('statuses', params, (err, data, response) => {
