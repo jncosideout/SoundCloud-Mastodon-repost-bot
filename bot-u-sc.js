@@ -3,9 +3,9 @@ console.log("Mastodon bot starting...");
 const Tusk = require('tusk-mastodon');
 const fs = require('fs'),
       es = require('event-stream'),
-      path1 = 'songNumberTEMP.txt',
-      path2 = 'scpLikesAndRepostsTEMP.txt',
-      path3 = 'totalSongsNumberTEMP.txt';
+      path1 = 'memeNumberTEMP.txt',
+      path2 = 'NWHouNAMeetupMemesTEMP.txt',
+      path3 = 'totalMemesNumberTEMP.txt';
 var songToPost = "",
 
     songNumber = 0,

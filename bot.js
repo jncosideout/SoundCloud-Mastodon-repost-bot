@@ -25,7 +25,7 @@ try {
 } catch (error) {
     console.log("a READ error occurred, errno=" + error.errno + "\n")
     console.log(error)
-    process.exit(error.errno);    
+    process.exit(1);    
 }
 
 if (memeNumData.length != 0) {
@@ -96,7 +96,7 @@ var s = fs.createReadStream(path2)
         })
         .on('error', function(err) {
             console.log('Error occurred, errno=:' + err.errno + '\n', err);
-            process.exit(err.errno)
+            process.exit(1)
         })
         .on('end', function(){
             console.log('Finished Reading');
