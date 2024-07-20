@@ -17,7 +17,7 @@ var memeToPost = "",
     
     totalMemeNum = 0,
     totalMemeNumData = [],
-    totalMemeStr = "";    
+    totalMemeStr = "";
 
 try {
     memeNumData = fs.readFileSync(path1);
@@ -25,7 +25,7 @@ try {
 } catch (error) {
     console.log("a READ error occurred, errno=" + error.errno + "\n")
     console.log(error)
-    process.exit(1);    
+    process.exit(1);
 }
 
 if (memeNumData.length != 0) {
@@ -35,7 +35,7 @@ if (memeNumData.length != 0) {
     });
 } else {
     console.log('memeNumData was empty');
-    console.log('make sure bot-daemon.js has read access')
+    console.log('make sure bot.js has read access')
     process.exit(1);
 }
 console.log("meme number is: " + memeNumData);
@@ -88,7 +88,7 @@ var s = fs.createReadStream(path2)
 
                 if (i > memeNumber && i_as_string == "") {
                     console.log('memeToPost = ' + meme);
-                    memeToPost = meme;                   
+                    memeToPost = meme;
                     i_as_string = i.toString();
                 } 
 
@@ -139,7 +139,7 @@ async function toot(mediaUploadResp, params) {
                     console.log(`here is the toot on ${instanceURL}:`) 
                     console.log(`ID: ${status_data.id} and timestamp: ${status_data.created_at}`);
                     // update memeNum after posting to Mastodon
-                    console.log("incrementing memeNumber")            
+                    console.log("incrementing memeNumber")
                     updateMemeNum(currentMemeNumStr)
                     break
                 default:
@@ -208,7 +208,7 @@ async function upload(newMeme) {
 function updateMemeNum(currentMemeNumStr) {
     try {
         fs.writeFileSync(path1, currentMemeNumStr);
-        console.log('memeNumber changed to ' + currentMemeNumStr); 
+        console.log('memeNumber changed to ' + currentMemeNumStr);
         fs.writeFileSync(path3, totalMemeStr);
         console.log('total memes = ' + totalMemeStr);
     } catch(error) {

@@ -6,60 +6,59 @@ const fs = require('fs'),
       path1 = 'memeNumberTEMP.txt',
       path2 = 'NWHouNAMeetupMemesTEMP.txt',
       path3 = 'totalMemesNumberTEMP.txt';
-var songToPost = "",
+var memeToPost = "",
 
-    songNumber = 0,
-    songNumData = [],
-    currentSongNumStr = "",
+    memeNumber = 0,
+    memeNumData = [],
+    currentMemeNumStr = "",
     //in case we fail to post, store the old num
-    oldSongNumStr = ""
-
+    oldMemeNumStr = ""
     i_as_string = "",
     
-    totalSongNum = 0,
-    totalSongNumData = [],
-    totalSongStr = "";    
+    totalMemeNum = 0,
+    totalMemeNumData = [],
+    totalMemeStr = "";
 
 try {
-    songNumData = fs.readFileSync(path1);
-    totalSongNumData = fs.readFileSync(path3);
+    memeNumData = fs.readFileSync(path1);
+    totalMemeNumData = fs.readFileSync(path3);
 } catch (error) {
     console.log("a READ error occurred, errno=" + error.errno + "\n")
     console.log(error)
-    process.exit(error.errno);    
-}
-
-if (songNumData.length != 0) {
-    songNumData.forEach(i => {
-        currentSongNumStr += String.fromCharCode(i);
-        oldSongNumStr = currentSongNumStr
-    });
-} else {
-    console.log('songNumData was empty');
-    console.log('make sure bot-daemon.js has read access')
     process.exit(1);
 }
-console.log("song number is: " + songNumData);
-// the actual song read will be songNumber + 1
-songNumber = parseInt(currentSongNumStr);
+
+if (memeNumData.length != 0) {
+    memeNumData.forEach(i => {
+        currentMemeNumStr += String.fromCharCode(i);
+        oldMemeNumStr = currentMemeNumStr
+    });
+} else {
+    console.log('memeNumData was empty');
+    console.log('make sure bot.js has read access')
+    process.exit(1);
+}
+console.log("meme number is: " + memeNumData);
+// the actual meme read will be memeNumber + 1
+memeNumber = parseInt(currentMemeNumStr);
 
 
-if (totalSongNumData.length != 0) {
-    totalSongNumData.forEach(i => {
-        totalSongStr += String.fromCharCode(i);
+if (totalMemeNumData.length != 0) {
+    totalMemeNumData.forEach(i => {
+        totalMemeStr += String.fromCharCode(i);
     });  
 } else {
-    console.log('totalSongNumData was empty');
+    console.log('totalMemeNumData was empty');
     console.log('make sure bot-daemon.js has read access');
     process.exit(1);
 }
 
-console.log("total songs number is: " + totalSongNumData);
-totalSongNum = parseInt(totalSongStr);
+console.log("total memes number is: " + totalMemeNumData);
+totalMemeNum = parseInt(totalMemeStr);
 
-if (songNumber == totalSongNum) {
-    songNumber = 0;
-    console.log('songNumber reset to zero since reached EOF')
+if (memeNumber == totalMemeNum) {
+    memeNumber = 0;
+    console.log('memeNumber reset to zero since reached EOF')
 }
 
 const NAS = new Tusk({
@@ -74,20 +73,20 @@ var i = 0;
 
 var s = fs.createReadStream(path2)
     .pipe(es.split())
-    .pipe(es.mapSync(function(song) {
+    .pipe(es.mapSync(function(meme) {
                 // pause the readstream
                 s.pause();
                 
-                // the stream reads past the end of the file, causing a blank song to be read
+                // the stream reads past the end of the file, causing a blank meme to be read
                 // so to keep the total to not be counted one above the actual total,
                 // only increment if not blank
-                if (song != '') {
+                if (meme != '') {
                     i++;
                 }
 
-                if (i > songNumber && i_as_string == "") {
-                    console.log('songToPost = ' + song);
-                    songToPost = song;                   
+                if (i > memeNumber && i_as_string == "") {
+                    console.log('memeToPost = ' + meme);
+                    memeToPost = meme;
                     i_as_string = i.toString();
                 } 
 
@@ -99,28 +98,127 @@ var s = fs.createReadStream(path2)
         })
         .on('end', function(){
             console.log('Finished Reading');
-            totalSongStr = i.toString();
-            currentSongNumStr = i_as_string;
-            // finally, toot the new song
-            toot(songToPost);
+            totalMemeStr = i.toString();
+            currentMemeNumStr = i_as_string;
+            // finally, toot the new meme
+            upload(memeToPost)
+                .then((result) => {
+                    mediaResponse = result.mediaResponse
+                    params = result.params
+                    toot(mediaResponse, params)
+                })
+                .catch( function (err) {
+                    console.log("reject after upload(memeToPost), error = " )
+                    console.log(err.message + "\n=======================")
+                    console.log(err.stack)
+                    console.log("memeNumber not changed:" + oldMemeNumStr)
+                    process.exit(1)
+                });
         })
     );
 
-function toot(newSong) {
-    const params = {
-        status: "NW Houston NA Meetup #8: ⬇️\n\n"
-        + newSong + "\n\n" +
-        "⬇️ \n\n"
-        + "" +
-        "\n\n" + "#" + "\n\n\n\n" +
-        "",
-        visibility: "direct"
-    }
 
-    M.post('statuses', params, (err, data, response) => {
-        mastodonCallback(err, data, response, M.apiUrl)
-    });
+async function toot(mediaUploadResp, params) {
+    media_responseCode = mediaUploadResp.status
+
+    switch (true) {
+        // image upload response code
+        case (media_responseCode > 199 && media_responseCode < 300):
+            result = await NAS.post('statuses', params)
+            status_data = result.data
+            status_resp = result.resp
+            status_responseCode = status_resp.status
+            instanceURL = NAS.apiUrl
+
+            switch (true) {
+                // status message POST
+                case (status_responseCode > 199 && status_responseCode < 300):
+                    //SUCCESS
+                    console.log('success! :)')
+                    console.log(`here is the toot on ${instanceURL}:`) 
+                    console.log(`ID: ${status_data.id} and timestamp: ${status_data.created_at}`);
+                    // update memeNum after posting to Mastodon
+                    console.log("incrementing memeNumber")
+                    updateMemeNum(currentMemeNumStr)
+                    break
+                default:
+                    console.log("NAS.post('statuses') failed")
+                    console.log("status_responseCode= " + status_responseCode + " statusText " + status_resp.statusText)
+                    if (status_data.error) {
+                        console.log("status_data.error \n======================")
+                        console.log(status_data.error)
+                    }
+                    console.log("memeNumber not changed:" + oldMemeNumStr)
+                    process.exit(1)
+            }
+            break
+        // media upload POST failed
+        default:
+            console.log("media upload failed")
+            console.log("media_responseCode.statusCode= " + media_responseCode + " status " + mediaUploadResp.statusText)
+            console.log("memeNumber not changed:" + oldMemeNumStr)
+            process.exit(1)
+    }
 }
+
+
+async function upload(newMeme) {
+    //DEBUG testing Promises instead of callback
+    // seems to work but Uncaught Error: getaddrinfo ENOTFOUND
+    // is a bug in the mastodon-api library I'm using
+    // https://stackoverflow.com/questions/64283656/nodejs-getaddrinfo-enotfound-uncaught
+    return await NAS.post("media", { file: fs.createReadStream(newMeme) })
+        .then((result) => {
+            media_data = result.data
+            mediaUploadResp = result.resp
+            media_RespCode = mediaUploadResp.status
+            mediaID = media_data.id
+            console.log(` NAS.post(media) Success media_RespCode=${media_RespCode} mediaID=${mediaID}`)
+            const params = {
+                status: ":feelsgoodman: :itm: The " + process.env.MEETUP_NUM + " Northwest Houston\n" +
+                        "           No Agenda Meetup! :vibing_cat: \n\n" +
+                        process.env.MEETUP_URL +
+                        "\n(👆RSVP is NOW available!!) :pepe_clap:\n" +
+                        "\n:siren: :pepe_happy:\n\n" +
+                        "🌎 Where:\n" +
+                        "- Wakefield Crowbar\n" +
+                        "🕔 When\n" +
+                        "- Saturday " + process.env.MEETUP_DATE + "\n" +
+                        " 🤠  🇨🇱 🌵 🦂 🚀\n" +
+                        "#NorthwestHoustonNoAgendaMeetup\n" +
+                        "Please follow the hashtag⬆️  (or filter it out ¯\\_(ツ)_/¯ )",
+                media_ids: [mediaID],
+                visibility: "direct"
+            }
+
+            return {params: params, mediaResponse: mediaUploadResp}
+  
+        })
+        // media upload POST
+        .catch( function (err) {
+            console.log(" NAS.post(media) or createReadStream for media upload failed" )
+            console.log("statusCode= " + err.statusCode + " err.code " + err.code)
+            console.log(err.message + "\n=======================")
+            console.log(err.stack)
+            console.log("memeNumber not changed:" + oldMemeNumStr)
+            process.exit(1)
+        })
+}
+// function toot(newSong) {
+//     const params = {
+//         status: "NW Houston NA Meetup #8: ⬇️\n\n"
+//         + newSong + "\n\n" +
+//         "⬇️ \n\n"
+//         + "" +
+//         "\n\n" + "#" + "\n\n\n\n" +
+//         "",
+//         visibility: "direct"
+//     }
+//
+//     M.post('statuses', params, (err, data, response) => {
+//         mastodonCallback(err, data, response, M.apiUrl)
+//     });
+// }
 
 function mastodonCallback(post_err, data, response, instanceURL) {
     if (post_err) {
@@ -151,12 +249,12 @@ function mastodonCallback(post_err, data, response, instanceURL) {
     }
 } 
 
-function updateSongNum(currentSongNumStr) {
+function updateMemeNum(currentMemeNumStr) {
     try {
-        fs.writeFileSync(path1, currentSongNumStr);
-        console.log('songNumber changed to ' + currentSongNumStr); 
-        fs.writeFileSync(path3, totalSongStr);
-        console.log('total songs = ' + totalSongStr);
+        fs.writeFileSync(path1, currentMemeNumStr);
+        console.log('memeNumber changed to ' + currentMemeNumStr);
+        fs.writeFileSync(path3, totalMemeStr);
+        console.log('total memes = ' + totalMemeStr);
     } catch(error) {
         console.log("a WRITE error occurred, errno=" + error.errno + "\n")
         console.log(error)
