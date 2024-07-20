@@ -23,8 +23,9 @@ try {
     memeNumData = fs.readFileSync(path1);
     totalMemeNumData = fs.readFileSync(path3);
 } catch (error) {
-    console.log("a READ error occurred, errno=" + error.errno + "\n")
-    console.log(error)
+    console.log('a READ error occurred, error.code=:' + error.code + '\n==========');
+    console.log(error.message)
+    console.log(error.stack)
     process.exit(1);
 }
 
@@ -72,8 +73,8 @@ const NAS = new Tusk({
 var i = 0;
 
 var s = fs.createReadStream(path2)
-    .pipe(es.split())
-    .pipe(es.mapSync(function(meme) {
+        .pipe(es.split())
+        .pipe(es.mapSync(function(meme) {
                 // pause the readstream
                 s.pause();
                 
@@ -93,7 +94,9 @@ var s = fs.createReadStream(path2)
                 s.resume();                
         })
         .on('error', function(err) {
-            console.log('Error occurred, errno=:' + err.errno + '\n', err);
+            console.log('Error occurred, err.code=:' + err.code + '\n=========');
+            console.log(err.message)
+            console.log(err.stack)
             process.exit(1)
         })
         .on('end', function(){
@@ -108,8 +111,8 @@ var s = fs.createReadStream(path2)
                     toot(mediaResponse, params)
                 })
                 .catch( function (err) {
-                    console.log("reject after upload(memeToPost), error = " )
-                    console.log(err.message + "\n=======================")
+                    console.log("reject after upload(memeToPost), error.code = " + err.code + "\n=======================")
+                    console.log(err.message)
                     console.log(err.stack)
                     console.log("memeNumber not changed:" + oldMemeNumStr)
                     process.exit(1)
@@ -145,8 +148,10 @@ async function toot(mediaUploadResp, params) {
                     console.log("NAS.post('statuses') failed")
                     console.log("status_responseCode= " + status_responseCode + " statusText " + status_resp.statusText)
                     if (status_data.error) {
-                        console.log("status_data.error \n======================")
-                        console.log(status_data.error)
+                        error = status_data.error
+                        console.log("status_data.error.code= " + error.code + " \n======================")
+                        console.log(error.message)
+                        console.log(err.stack)
                     }
                     console.log("memeNumber not changed:" + oldMemeNumStr)
                     process.exit(1)
@@ -163,11 +168,16 @@ async function toot(mediaUploadResp, params) {
 
 
 async function upload(newMeme) {
-    //DEBUG testing Promises instead of callback
-    // seems to work but Uncaught Error: getaddrinfo ENOTFOUND
-    // is a bug in the mastodon-api library I'm using
-    // https://stackoverflow.com/questions/64283656/nodejs-getaddrinfo-enotfound-uncaught
-    return await NAS.post("media", { file: fs.createReadStream(newMeme) })
+    return await NAS.post("media",
+                            { file: fs.createReadStream(newMeme)
+                                        .on('error', function(err) {
+                                            console.log('Error occurred reading newMeme, errno=:' + err.code + "\n=======================")
+                                            console.log(err.message)
+                                            console.log(err.stack)
+                                            process.exit(1)
+                                        })
+                            }
+                        )
         .then((result) => {
             media_data = result.data
             mediaUploadResp = result.resp
@@ -197,8 +207,8 @@ async function upload(newMeme) {
         // media upload POST
         .catch( function (err) {
             console.log(" NAS.post(media) or createReadStream for media upload failed" )
-            console.log("statusCode= " + err.statusCode + " err.code " + err.code)
-            console.log(err.message + "\n=======================")
+            console.log("statusCode= " + err.statusCode + " err.code " + err.code  + "\n=======================")
+            console.log(err.message)
             console.log(err.stack)
             console.log("memeNumber not changed:" + oldMemeNumStr)
             process.exit(1)
@@ -256,8 +266,9 @@ function updateMemeNum(currentMemeNumStr) {
         fs.writeFileSync(path3, totalMemeStr);
         console.log('total memes = ' + totalMemeStr);
     } catch(error) {
-        console.log("a WRITE error occurred, errno=" + error.errno + "\n")
-        console.log(error)
+        console.log("a WRITE error occurred, error.code=" + error.code + "\n============")
+        console.log(error.message)
+        console.log(error.stack)
         process.exit(1)
     }
 }
