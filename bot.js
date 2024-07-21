@@ -191,7 +191,7 @@ async function upload(newMeme) {
                         "\n(👆RSVP is NOW available!!) :pepe_clap:\n" +
                         "\n:siren: :pepe_happy:\n\n" +
                         "🌎 Where:\n" +
-                        "- Wakefield Crowbar\n" +
+                        "- " + process.env.MEETUP_VENUE + "\n" +
                         "🕔 When\n" +
                         "- Saturday " + process.env.MEETUP_DATE + "\n" +
                         " 🤠  🇨🇱 🌵 🦂 🚀\n" +
