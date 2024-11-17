@@ -62,7 +62,7 @@ if (songNumber == totalSongNum) {
     console.log('songNumber reset to zero since reached EOF')
 }
 
-const BIS = new Tusk({
+const TUSK = new Tusk({
     client_key: process.env.M_CLIENT_KEY,
     client_secret: process.env.M_CLIENT_SECRET,
     access_token: process.env.M_AUTH_TOKEN,
@@ -119,12 +119,12 @@ function toot(newSong) {
     // seems to work but Uncaught Error: getaddrinfo ENOTFOUND
     // is a bug in the mastodon-api library I'm using
     // https://stackoverflow.com/questions/64283656/nodejs-getaddrinfo-enotfound-uncaught
-    BIS.post('statuses', params)
+    TUSK.post('statuses', params)
         .then( function (promiseObject) {
             data = promiseObject.data
             resp = promiseObject.resp
             rspCode = resp.status
-            instanceURL = BIS.apiUrl
+            instanceURL = TUSK.apiUrl
             switch (true) {
                 case (rspCode > 199 && rspCode < 300):
                     //SUCCESS
@@ -142,7 +142,7 @@ function toot(newSong) {
             }
         })
         .catch( function (err) {
-            console.log("BIS.post('statuses') failed, error = " )
+            console.log("TUSK.post('statuses') failed, error = " )
             if (err.statusCode || err.code) {
                 console.log(`statusCode= ${err.statusCode} err.code ${err.code}`)
             }

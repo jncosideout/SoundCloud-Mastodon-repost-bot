@@ -62,7 +62,7 @@ if (songNumber == totalSongNum) {
     console.log('songNumber reset to zero since reached EOF')
 }
 
-const M = new Tusk({
+const TUSK = new Tusk({
     client_key: process.env.M_CLIENT_KEY,
     client_secret: process.env.M_CLIENT_SECRET,
     access_token: process.env.M_AUTH_TOKEN,
@@ -116,8 +116,8 @@ function toot(newSong) {
         visibility: "direct"
     }
 
-    M.post('statuses', params, (err, data, response) => {
-        mastodonCallback(err, data, response, M.apiUrl)
+    TUSK.post('statuses', params, (err, data, response) => {
+        mastodonCallback(err, data, response, TUSK.apiUrl)
     });
 }
 
