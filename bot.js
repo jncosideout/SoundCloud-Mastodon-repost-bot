@@ -115,10 +115,6 @@ function toot(newSong) {
         "♬♫♪ ヽ(⌐■_■)ﾉ ♪♫♬"
     }
 
-    //DEBUG testing Promises instead of callback
-    // seems to work but Uncaught Error: getaddrinfo ENOTFOUND
-    // is a bug in the mastodon-api library I'm using
-    // https://stackoverflow.com/questions/64283656/nodejs-getaddrinfo-enotfound-uncaught
     TUSK.post('statuses', params)
         .then( function (promiseObject) {
             data = promiseObject.data
@@ -129,10 +125,10 @@ function toot(newSong) {
                 case (rspCode > 199 && rspCode < 300):
                     //SUCCESS
                     console.log('success! :)')
-                    console.log(`here is the toot on ${instanceURL}:`)      
+                    console.log(`here is the toot on ${instanceURL}:`)
                     console.log(`ID: ${data.id} and timestamp: ${data.created_at}`)
                     // update songNum after posting to Mastodon
-                    console.log("incrementing songNumber")            
+                    console.log("incrementing songNumber")
                     updateSongNum(currentSongNumStr)
                     break
                 default:
@@ -155,7 +151,7 @@ function toot(newSong) {
 
 function mastodonCallback(post_err, data, response, instanceURL) {
     if (post_err) {
-        console.log("an error when tooting, errno=" + post_err.errno)            
+        console.log("an error when tooting, errno=" + post_err.errno)
         console.log("post_err is\n" + post_err)
         console.log("data.error is\n" + data.error)
         console.log("songNumber not changed:" + oldSongNumStr)
@@ -170,11 +166,11 @@ function mastodonCallback(post_err, data, response, instanceURL) {
             case (rspCode >= 200 && rspCode < 300):
                 //SUCCESS
                 console.log(`here is the toot on ${instanceURL}:`) 
-                console.log(`ID: ${data.id} and timestamp: ${data.created_at}`);  
+                console.log(`ID: ${data.id} and timestamp: ${data.created_at}`)
                 // update songNum after successful post
                 console.log("incrementing songNumber")
-                updateSongNum(currentSongNumStr)       
-                break   
+                updateSongNum(currentSongNumStr)
+                break
             default:
                 console.log("request failed, response.statusCode= " + rspCode)
                 console.log("post_err is\n " + post_err)
@@ -184,6 +180,7 @@ function mastodonCallback(post_err, data, response, instanceURL) {
         }
     }
 }
+
 function updateSongNum(currentSongNumStr) {
     try {
         fs.writeFileSync(path1, currentSongNumStr);
