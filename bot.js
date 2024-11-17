@@ -106,8 +106,8 @@ var s = fs.createReadStream(path2)
     );
 
 function toot(newSong) {
-
-    _visibility = songNumber % 2 == 0 ? 'public' : 'unlisted'
+    post_frequency = process.env.POST_VISIBILITY_FREQUENCY
+    _visibility = songNumber % post_frequency == 0 ? 'public' : 'unlisted'
 
     const params = {
         status: "this song came from  my feed on SoundCloud: ⬇️\n\n"
