@@ -1,6 +1,6 @@
 require('dotenv').config();
 console.log("Mastodon bot starting...");
-const Mastodon = require('mastodon-api');
+const Tusk = require('tusk-mastodon');
 const fs = require('fs'),
       es = require('event-stream'),
       path1 = 'songNumberTEMP.txt',
@@ -62,16 +62,15 @@ if (songNumber == totalSongNum) {
     console.log('songNumber reset to zero since reached EOF')
 }
 
-const NAS = new Mastodon({
-    client_key: process.env.NAS_CLIENT_KEY,
-    client_secret: process.env.NAS_CLIENT_SECRET,
-    access_token: process.env.NAS_AUTH_TOKEN,
+const TUSK = new Tusk({
+    client_key: process.env.M_CLIENT_KEY,
+    client_secret: process.env.M_CLIENT_SECRET,
+    access_token: process.env.M_AUTH_TOKEN,
     timeout_ms: 60*1000,  // optional HTTP request timeout to apply to all requests.
-    api_url: 'https://noagendasocial.com/api/v1/', // optional, defaults to https://mastodon.social/api/v1/
+    api_url: process.env.M_INSTANCE_URL + '/api/v1/', // defaults to https://mastodon.social/api/v1/
 })
 
 var i = 0;
-
 var s = fs.createReadStream(path2)
     .pipe(es.split())
     .pipe(es.mapSync(function(song) {
@@ -89,20 +88,49 @@ var s = fs.createReadStream(path2)
                     console.log('songToPost = ' + song);
                     songToPost = song;                   
                     i_as_string = i.toString();
+                    // "MEME_FOUND" custom error to catch, but unnecessary b/c destroy() calls .on(close)
+                    s.destroy("MEME_FOUND")
+                    return
                 } 
 
                 s.resume();                
         })
         .on('error', function(err) {
-            console.log('Error occurred, errno=:' + err.errno + '\n', err);
-            process.exit(1)
+            // error "MEME_FOUND" never called
+            if (err === "MEME_FOUND") {
+                console.log('Finished Reading .on(error === "MEME_FOUND")');
+                console.log(err)
+                totalSongStr = i.toString();
+                currentSongNumStr = i_as_string;
+                // finally, toot the new song
+                // toot(songToPost);
+                //DEBUG to circumvent toot(), remove updateSongNum() in production
+                updateSongNum(currentSongNumStr)
+            } else {
+                console.log("error 4324324312")
+                reject('Error occurred, errno=:' + err.errno + '\n', err);
+                process.exit(1)
+            }
         })
+        // on(end) doesn't get called
         .on('end', function(){
-            console.log('Finished Reading');
+            console.log('Finished Reading .on(end)');
             totalSongStr = i.toString();
             currentSongNumStr = i_as_string;
             // finally, toot the new song
-            toot(songToPost);
+            // toot(songToPost);
+            //DEBUG to circumvent toot(), remove updateSongNum() in production
+            updateSongNum(currentSongNumStr)
+        })
+        // on(close) gets called by mapstream.destroy() when song is found
+        .on('close', function(){
+            console.log('Finished Reading .on(close)');
+            totalSongStr = i.toString();
+            currentSongNumStr = i_as_string;
+            // finally, toot the new song
+            // toot(songToPost);
+            //DEBUG to circumvent toot(), remove updateSongNum() in production
+            updateSongNum(currentSongNumStr)
         })
     );
 
@@ -117,16 +145,46 @@ function toot(newSong) {
         visibility: "direct"
     }
 
-    NAS.post('statuses', params, (err, data, response) => {
-        mastodonCallback(err, data, response, NAS.apiUrl)
-    });
+    TUSK.post('statuses', params)
+        .then( function (promiseObject) {
+            data = promiseObject.data
+            resp = promiseObject.resp
+            rspCode = resp.status
+            instanceURL = TUSK.apiUrl
+            switch (true) {
+                case (rspCode > 199 && rspCode < 300):
+                    //SUCCESS
+                    console.log('success! :)')
+                    console.log(`here is the toot on ${instanceURL}:`)
+                    console.log(`ID: ${data.id} and timestamp: ${data.created_at}`)
+                    // update songNum after posting to Mastodon
+                    console.log("incrementing songNumber")
+                    updateSongNum(currentSongNumStr)
+                    break
+                default:
+                    console.log(`request failed, response.statusCode= ${rspCode} statusText ${resp.statusText}`)
+                    console.log("songNumber not changed:" + oldSongNumStr)
+                    process.exit(1)
+            }
+        })
+        .catch( function (err) {
+            console.log("TUSK.post('statuses') failed, error = " )
+            if (err.statusCode || err.code) {
+                console.log(`statusCode= ${err.statusCode} err.code ${err.code}`)
+            }
+            console.log(err.message + "\n=======================")
+            console.log(err.stack)
+            console.log("songNumber not changed:" + oldSongNumStr)
+            process.exit(1)
+        })
 }
 
 function mastodonCallback(post_err, data, response, instanceURL) {
     if (post_err) {
         console.log("an error when tooting, errno=" + post_err.errno)
+        console.log("post_err is\n" + post_err)
+        console.log("data.error is\n" + data.error)
         console.log("songNumber not changed:" + oldSongNumStr)
-        console.log(post_err)
         process.exit(1)
     } else if (data.length < 1) {
         console.log("no data")
@@ -145,11 +203,13 @@ function mastodonCallback(post_err, data, response, instanceURL) {
                 break
             default:
                 console.log("request failed, response.statusCode= " + rspCode)
+                console.log("post_err is\n " + post_err)
+                console.log("data.error is\n" + data.error)
                 console.log("songNumber not changed:" + oldSongNumStr)
                 process.exit(1)
         }
     }
-} 
+}
 
 function updateSongNum(currentSongNumStr) {
     try {
