@@ -67,7 +67,7 @@ const BIS = new Tusk({
     client_secret: process.env.M_CLIENT_SECRET,
     access_token: process.env.M_AUTH_TOKEN,
     timeout_ms: 60*1000,  // optional HTTP request timeout to apply to all requests.
-    api_url: 'https://botsin.space/api/v1/', // optional, defaults to https://mastodon.social/api/v1/n
+    api_url: process.env.M_INSTANCE_URL + '/api/v1/', // defaults to https://mastodon.social/api/v1/
 })
 
 var i = 0;
