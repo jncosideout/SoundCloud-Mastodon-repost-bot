@@ -88,20 +88,49 @@ var s = fs.createReadStream(path2)
                     console.log('songToPost = ' + song);
                     songToPost = song;                   
                     i_as_string = i.toString();
+                    // "MEME_FOUND" custom error to catch, but unnecessary b/c destroy() calls .on(close)
+                    s.destroy("MEME_FOUND")
+                    return
                 } 
 
                 s.resume();                
         })
         .on('error', function(err) {
-            console.log('Error occurred, errno=:' + err.errno + '\n', err);
-            process.exit(1)
+            // error "MEME_FOUND" never called
+            if (err === "MEME_FOUND") {
+                console.log('Finished Reading .on(error === "MEME_FOUND")');
+                console.log(err)
+                totalSongStr = i.toString();
+                currentSongNumStr = i_as_string;
+                // finally, toot the new song
+                // toot(songToPost);
+                //DEBUG to circumvent toot(), remove updateSongNum() in production
+                updateSongNum(currentSongNumStr)
+            } else {
+                console.log("error 4324324312")
+                reject('Error occurred, errno=:' + err.errno + '\n', err);
+                process.exit(1)
+            }
         })
+        // on(end) doesn't get called
         .on('end', function(){
-            console.log('Finished Reading');
+            console.log('Finished Reading .on(end)');
             totalSongStr = i.toString();
             currentSongNumStr = i_as_string;
             // finally, toot the new song
-            toot(songToPost);
+            // toot(songToPost);
+            //DEBUG to circumvent toot(), remove updateSongNum() in production
+            updateSongNum(currentSongNumStr)
+        })
+        // on(close) gets called by mapstream.destroy() when song is found
+        .on('close', function(){
+            console.log('Finished Reading .on(close)');
+            totalSongStr = i.toString();
+            currentSongNumStr = i_as_string;
+            // finally, toot the new song
+            // toot(songToPost);
+            //DEBUG to circumvent toot(), remove updateSongNum() in production
+            updateSongNum(currentSongNumStr)
         })
     );
 
