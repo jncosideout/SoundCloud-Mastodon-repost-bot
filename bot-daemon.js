@@ -116,7 +116,8 @@ function toot(newSong) {
         + "https://soundcloud.com/sour_cream_pringles" +
         "\n\n" + "#EDM #acid #electro #IDM" + "\n\n\n\n" +
         "♬♫♪ ヽ(⌐■_■)ﾉ ♪♫♬",
-        visibility: "direct"
+        visibility: "direct",
+        file: "true" // forces tusk to send a multipart form request instead of a url query see tusk-mastodon/lib/mastodon.js:_buildReqOpts()
     }
 
     TUSK.post('statuses', params)
@@ -147,6 +148,9 @@ function toot(newSong) {
                 console.log(`statusCode= ${err.statusCode} err.code ${err.code}`)
             }
             console.log(err.message + "\n=======================")
+            if (err.mastodonReply) { 
+                console.log(err.mastodonReply.errors.detail + "\n=======================")
+            }
             console.log(err.stack)
             console.log("songNumber not changed:" + oldSongNumStr)
             process.exit(1)
