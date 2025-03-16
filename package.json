@@ -21,7 +21,7 @@
   },
   "homepage": "https://github.com/jncosideout/SoundCloud-Mastadon-repost-bot#readme",
   "dependencies": {
-    "dotenv": "^8.6.0",
+    "dotenv": "^16.4.7",
     "event-stream": "^4.0.1",
     "tusk-mastodon": "^2.3.0"
   }
