@@ -12,7 +12,7 @@
                 "<node_internals>/**"
             ],
             "type": "node",
-            "runtimeExecutable" : "/home/alexb/.nvm/versions/node/v14.21.3/bin/node"
+            "runtimeExecutable" : "${env:HOME}/.nvm/versions/node/v21.6.0/bin/node"
         },
         {
             "name": "Launch Prog test bot.js",
