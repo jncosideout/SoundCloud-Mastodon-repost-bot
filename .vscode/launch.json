@@ -15,6 +15,16 @@
             "runtimeExecutable" : "${env:HOME}/.nvm/versions/node/v21.6.0/bin/node"
         },
         {
+            "name": "Launch Prog test bot-daemon ",
+            "program": "${workspaceFolder}/bot-daemon.js",
+            "request": "launch",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "type": "node",
+            "runtimeExecutable" : "${env:HOME}/.nvm/versions/node/v21.6.0/bin/node"
+        },
+        {
             "name": "Launch Prog test bot.js",
             "program": "${workspaceFolder}/bot.js",
             "request": "launch",
