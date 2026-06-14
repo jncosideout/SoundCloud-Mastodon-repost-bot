@@ -69,12 +69,10 @@ if (songNumber == totalSongNum) {
     console.log('songNumber reset to zero since reached EOF')
 }
 
-const TUSK = new Tusk({
-    client_key: process.env.M_CLIENT_KEY,
-    client_secret: process.env.M_CLIENT_SECRET,
-    access_token: process.env.M_AUTH_TOKEN,
-    timeout_ms: 60*1000,  // optional HTTP request timeout to apply to all requests.
-    api_url: process.env.M_INSTANCE_URL + '/api/v1/', // defaults to https://mastodon.social/api/v1/
+const masto = createRestAPIClient({
+    url: instance_url,
+    accessToken: access_token,
+    timeout: 60*1000,  // optional HTTP request timeout in milliseconds to apply to all requests.
 })
 
 var i = 0;
@@ -115,37 +113,53 @@ var s = fs.createReadStream(path2)
 function toot(newSong) {
     const _visibility = songNumber % post_frequency == 0 ? 'public' : 'unlisted'
 
-    const params = {
+    const statusParams = {
         status: "this song came from  my feed on SoundCloud: ⬇️\n\n"
         + newSong + "\n\n" +
         "for more cool electronic music go here: ⬇️ \n\n"
         + "https://soundcloud.com/sour_cream_pringles" +
         "\n\n" + "#EDM #acid #electro #IDM" + "\n\n\n\n" +
         "♬♫♪ ヽ(⌐■_■)ﾉ ♪♫♬",
-        visibility: "direct",
-        file: "true" // forces tusk to send a multipart form request instead of a url query see tusk-mastodon/lib/mastodon.js:_buildReqOpts()
+        visibility: "direct"
     }
 
-    TUSK.post('statuses', params)
+    const httpParams = {
+        encoding : "multipart-form",
+        requestInit: {
+            headers: new Headers({ "content-type" : "multipart/form-data" }),
+        }
+    }
+
+    // masto.v1.statuses.create(
+    //         {
+    //             status: "test1",
+    //             visibility: "direct"
+    //         },
+    //         {
+    //             // encoding : "multipart-form",
+    //             requestInit: {
+    //                 headers: new Headers({ "Authorization" : `Bearer ${access_token}` }),
+    //             }
+    //         }
+    //     )
+        // masto.v1.statuses.create(statusParams, httpParams)
+    masto.v1.statuses.create.$raw(statusParams)
         .then( function (promiseObject) {
-            data = promiseObject.data
-            resp = promiseObject.resp
-            rspCode = resp.status
-            instanceURL = TUSK.apiUrl
-            switch (true) {
-                case (rspCode > 199 && rspCode < 300):
-                    //SUCCESS
-                    console.log('success! :)')
-                    console.log(`here is the toot on ${instanceURL}:`)
-                    console.log(`ID: ${data.id} and timestamp: ${data.created_at}`)
-                    // update songNum after posting to Mastodon
-                    console.log("incrementing songNumber")
-                    updateSongNum(currentSongNumStr)
-                    break
-                default:
-                    console.log(`request failed, response.statusCode= ${rspCode} statusText ${resp.statusText}`)
-                    console.log("songNumber not changed:" + oldSongNumStr)
-                    process.exit(1)
+            const data = promiseObject.data,
+                headers = promiseObject.headers,
+                instanceURL = masto.url
+            if (data) {
+                //SUCCESS
+                console.log('success! :)')
+                console.log(`here is the toot on ${instanceURL}:`)
+                console.log(`ID: ${data.id} and timestamp: ${data.created_at}`)
+                // update songNum after posting to Mastodon
+                console.log("incrementing songNumber")
+                updateSongNum(currentSongNumStr)
+            } else {
+                console.log(`request failed,\ndata:\n${data}\n======\nheaders\n${headers}`)
+                console.log("songNumber not changed: " + oldSongNumStr)
+                process.exit(1)
             }
         })
         .catch( function (err) {
