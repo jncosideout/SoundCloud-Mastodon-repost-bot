@@ -180,38 +180,6 @@ function toot(newSong) {
         })
 }
 
-function mastodonCallback(post_err, data, response, instanceURL) {
-    if (post_err) {
-        console.log("an error when tooting, errno=" + post_err.errno)
-        console.log("post_err is\n" + post_err)
-        console.log("data.error is\n" + data.error)
-        console.log("songNumber not changed:" + oldSongNumStr)
-        process.exit(1)
-    } else if (data.length < 1) {
-        console.log("no data")
-        console.log("songNumber not changed:" + oldSongNumStr)
-        process.exit(1)
-    } else {
-        rspCode = response.statusCode
-        switch (true) {
-            case (rspCode >= 200 && rspCode < 300):
-                //SUCCESS
-                console.log(`here is the toot on ${instanceURL}:`) 
-                console.log(`ID: ${data.id} and timestamp: ${data.created_at}`)
-                // update songNum after successful post
-                console.log("incrementing songNumber")
-                updateSongNum(currentSongNumStr)
-                break
-            default:
-                console.log("request failed, response.statusCode= " + rspCode)
-                console.log("post_err is\n " + post_err)
-                console.log("data.error is\n" + data.error)
-                console.log("songNumber not changed:" + oldSongNumStr)
-                process.exit(1)
-        }
-    }
-}
-
 function updateSongNum(currentSongNumStr) {
     try {
         fs.writeFileSync(path1, currentSongNumStr);
