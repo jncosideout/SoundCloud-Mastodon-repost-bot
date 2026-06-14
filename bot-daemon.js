@@ -126,19 +126,28 @@ function toot(newSong) {
     masto.v1.statuses.create.$raw(statusParams)
         .then( function (promiseObject) {
             const data = promiseObject.data,
-                headers = promiseObject.headers,
-                instanceURL = masto.url
-            if (data) {
+                headers = promiseObject.headers
+            if (data.url) {
                 //SUCCESS
                 console.log('success! :)')
-                console.log(`here is the toot on ${instanceURL}:`)
-                console.log(`ID: ${data.id} and timestamp: ${data.created_at}`)
+                console.log(`here is the toot on ${instance_url}:`)
+                console.log(`ID: ${data.id} and timestamp: ${data.createdAt}`)
+                console.log(data.url)
+                console.log("========================")
                 // update songNum after posting to Mastodon
                 console.log("incrementing songNumber")
                 updateSongNum(currentSongNumStr)
             } else {
-                console.log(`request failed,\ndata:\n${data}\n======\nheaders\n${headers}`)
+                console.log("request failed")
                 console.log("songNumber not changed: " + oldSongNumStr)
+                console.log("headers\n========================")
+                for (const pair of headers.entries()) {
+                    console.log(`    ${pair[0]}: ${pair[1]}`);
+                }
+                if (data.error) {
+                    console.log("========================")
+                    console.log("data.error\n    " + data.error)
+                }
                 process.exit(1)
             }
         })
