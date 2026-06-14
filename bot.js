@@ -1,9 +1,16 @@
-require('dotenv').config();
+import { config } from "dotenv"
+config()
+const post_frequency = process.env.POST_VISIBILITY_FREQUENCY,
+    instance_url = process.env.M_INSTANCE_URL,
+    access_token = process.env.M_AUTH_TOKEN
 console.log("Mastodon bot starting...");
-const Tusk = require('tusk-mastodon');
-const fs = require('fs'),
-      es = require('event-stream'),
-      path1 = 'songNumber.txt',
+import { createRestAPIClient } from "masto"
+
+import fs, { access } from 'fs'
+import pkg from "event-stream"
+const { split, mapSync } = pkg
+
+const path1 = 'songNumber.txt',
       path2 = 'scpLikesAndReposts.txt',
       path3 = 'totalSongsNumber.txt';
 var songToPost = "",
@@ -12,7 +19,7 @@ var songToPost = "",
     songNumData = [],
     currentSongNumStr = "",
     //in case we fail to post, store the old num
-    oldSongNumStr = ""
+    oldSongNumStr = "",
 
     i_as_string = "",
     
@@ -62,18 +69,16 @@ if (songNumber == totalSongNum) {
     console.log('songNumber reset to zero since reached EOF')
 }
 
-const TUSK = new Tusk({
-    client_key: process.env.M_CLIENT_KEY,
-    client_secret: process.env.M_CLIENT_SECRET,
-    access_token: process.env.M_AUTH_TOKEN,
-    timeout_ms: 60*1000,  // optional HTTP request timeout to apply to all requests.
-    api_url: process.env.M_INSTANCE_URL + '/api/v1/', // defaults to https://mastodon.social/api/v1/
+const masto = createRestAPIClient({
+    url: instance_url,
+    accessToken: access_token,
+    timeout: 60*1000,  // optional HTTP request timeout in milliseconds to apply to all requests.
 })
 
 var i = 0;
 var s = fs.createReadStream(path2)
-    .pipe(es.split())
-    .pipe(es.mapSync(function(song) {
+    .pipe(split())
+    .pipe(mapSync(function(song) {
                 // pause the readstream
                 s.pause();
                 
@@ -93,7 +98,7 @@ var s = fs.createReadStream(path2)
                 s.resume();                
         })
         .on('error', function(err) {
-            console.log('Error occurred while reading, errno=:' + err.errno + '\n', err);
+            console.log('Error occurred, errno=:' + err.errno + '\n', err);
             process.exit(1)
         })
         .on('end', function(){
@@ -106,84 +111,73 @@ var s = fs.createReadStream(path2)
     );
 
 function toot(newSong) {
-    post_frequency = process.env.POST_VISIBILITY_FREQUENCY
-    _visibility = songNumber % post_frequency == 0 ? 'public' : 'unlisted'
+    const _visibility = songNumber % post_frequency == 0 ? 'public' : 'unlisted'
 
-    const params = {
+    const statusParams = {
         status: "this song came from  my feed on SoundCloud: ⬇️\n\n"
         + newSong + "\n\n" +
         "for more cool electronic music go here: ⬇️ \n\n"
         + "https://soundcloud.com/sour_cream_pringles" +
         "\n\n" + "#EDM #acid #electro #IDM" + "\n\n\n\n" +
         "♬♫♪ ヽ(⌐■_■)ﾉ ♪♫♬",
-        visibility: _visibility,
-        file: "true" // forces tusk to send a multipart form request instead of a url query see tusk-mastodon/lib/mastodon.js:_buildReqOpts()
+        visibility: _visibility
     }
 
-    TUSK.post('statuses', params)
+    masto.v1.statuses.create.$raw(statusParams)
         .then( function (promiseObject) {
-            data = promiseObject.data
-            resp = promiseObject.resp
-            rspCode = resp.status
-            instanceURL = TUSK.apiUrl
-            switch (true) {
-                case (rspCode > 199 && rspCode < 300):
-                    //SUCCESS
-                    console.log('success! :)')
-                    console.log(`here is the toot on ${instanceURL}:`)
-                    console.log(`ID: ${data.id} and timestamp: ${data.created_at}`)
-                    // update songNum after posting to Mastodon
-                    console.log("incrementing songNumber")
-                    updateSongNum(currentSongNumStr)
-                    break
-                default:
-                    console.log(`request failed, response.statusCode= ${rspCode} statusText ${resp.statusText}`)
-                    console.log("songNumber not changed:" + oldSongNumStr)
-                    process.exit(1)
+            const data = promiseObject.data,
+                headers = promiseObject.headers
+            if (data.url) {
+                //SUCCESS
+                console.log('success! :)')
+                console.log(`here is the toot on ${instance_url}:`)
+                console.log(`ID: ${data.id} and timestamp: ${data.createdAt}`)
+                console.log(data.url)
+                console.log("========================")
+                // update songNum after posting to Mastodon
+                console.log("incrementing songNumber")
+                updateSongNum(currentSongNumStr)
+            } else {
+                console.log("request failed")
+                console.log("songNumber not changed: " + oldSongNumStr)
+                console.log("headers\n========================")
+                for (const pair of headers.entries()) {
+                    console.log(`    ${pair[0]}: ${pair[1]}`);
+                }
+                if (data.error) {
+                    console.log("========================")
+                    console.log("data.error\n    " + data.error)
+                }
+                process.exit(1)
             }
         })
         .catch( function (err) {
-            console.log("TUSK.post('statuses') failed, error = " )
-            if (err.statusCode || err.code) {
-                console.log(`statusCode= ${err.statusCode} err.code ${err.code}`)
+            //MastoHttpError properties
+            const statusCode = err.statusCode,
+                    message = err.message,
+                    description = err.description,
+                    details = err.details,
+                    additionalProperties = err.additionalProperties
+            console.log("masto post status failed, error = " )
+            console.log(message + "\n=======================")
+            if (statusCode) {
+                console.log(`statusCode= ${statusCode}`)
             }
-            console.log(err.message + "\n=======================")
+            if (description) {
+                console.log(description + "\n=======================")
+            }
+            if (details) {
+                console.log(details + "\n=======================")
+            }
+            if (additionalProperties) {
+                if (additionalProperties.errors) {
+                    console.log(additionalProperties.errors.detail + "\n=======================")
+                }
+            }
             console.log(err.stack)
             console.log("songNumber not changed:" + oldSongNumStr)
             process.exit(1)
         })
-}
-
-function mastodonCallback(post_err, data, response, instanceURL) {
-    if (post_err) {
-        console.log("an error when tooting, errno=" + post_err.errno)
-        console.log("post_err is\n" + post_err)
-        console.log("data.error is\n" + data.error)
-        console.log("songNumber not changed:" + oldSongNumStr)
-        process.exit(1)
-    } else if (data.length < 1) {
-        console.log("no data")
-        console.log("songNumber not changed:" + oldSongNumStr)
-        process.exit(1)
-    } else {
-        rspCode = response.statusCode
-        switch (true) {
-            case (rspCode >= 200 && rspCode < 300):
-                //SUCCESS
-                console.log(`here is the toot on ${instanceURL}:`) 
-                console.log(`ID: ${data.id} and timestamp: ${data.created_at}`)
-                // update songNum after successful post
-                console.log("incrementing songNumber")
-                updateSongNum(currentSongNumStr)
-                break
-            default:
-                console.log("request failed, response.statusCode= " + rspCode)
-                console.log("post_err is\n " + post_err)
-                console.log("data.error is\n" + data.error)
-                console.log("songNumber not changed:" + oldSongNumStr)
-                process.exit(1)
-        }
-    }
 }
 
 function updateSongNum(currentSongNumStr) {
