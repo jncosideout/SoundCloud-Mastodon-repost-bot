@@ -150,18 +150,20 @@ function toot(newSong) {
                     details = err.details,
                     additionalProperties = err.additionalProperties
             console.log("masto post status failed, error = " )
+            console.log(message + "\n=======================")
             if (statusCode) {
                 console.log(`statusCode= ${statusCode}`)
             }
-            console.log(message + "\n=======================")
             if (description) {
                 console.log(description + "\n=======================")
             }
             if (details) {
                 console.log(details + "\n=======================")
             }
-            if (additionalProperties.errors) {
-                console.log(additionalProperties.errors.detail + "\n=======================")
+            if (additionalProperties) {
+                if (additionalProperties.errors) {
+                    console.log(additionalProperties.errors.detail + "\n=======================")
+                }
             }
             console.log(err.stack)
             console.log("songNumber not changed:" + oldSongNumStr)
