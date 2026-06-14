@@ -149,13 +149,25 @@ function toot(newSong) {
             }
         })
         .catch( function (err) {
-            console.log("TUSK.post('statuses') failed, error = " )
-            if (err.statusCode || err.code) {
-                console.log(`statusCode= ${err.statusCode} err.code ${err.code}`)
+            //MastoHttpError properties
+            const statusCode = err.statusCode,
+                    message = err.message,
+                    description = err.description,
+                    details = err.details,
+                    additionalProperties = err.additionalProperties
+            console.log("masto post status failed, error = " )
+            if (statusCode) {
+                console.log(`statusCode= ${statusCode}`)
             }
-            console.log(err.message + "\n=======================")
-            if (err.mastodonReply) { 
-                console.log(err.mastodonReply.errors.detail + "\n=======================")
+            console.log(message + "\n=======================")
+            if (description) {
+                console.log(description + "\n=======================")
+            }
+            if (details) {
+                console.log(details + "\n=======================")
+            }
+            if (additionalProperties.errors) {
+                console.log(additionalProperties.errors.detail + "\n=======================")
             }
             console.log(err.stack)
             console.log("songNumber not changed:" + oldSongNumStr)
