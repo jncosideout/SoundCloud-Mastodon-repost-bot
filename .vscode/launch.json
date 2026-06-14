@@ -31,7 +31,8 @@
             "skipFiles": [
                 "<node_internals>/**"
             ],
-            "type": "node"
+            "type": "node",
+            "runtimeExecutable" : "${env:HOME}/.nvm/versions/node/v21.6.0/bin/node"
         },
         {
             "name": "Attach by Process ID",
