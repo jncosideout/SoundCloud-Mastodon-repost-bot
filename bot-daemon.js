@@ -1,9 +1,16 @@
-require('dotenv').config();
+import { config } from "dotenv"
+config()
+const post_frequency = process.env.POST_VISIBILITY_FREQUENCY,
+    instance_url = process.env.M_INSTANCE_URL,
+    access_token = process.env.M_AUTH_TOKEN
 console.log("Mastodon bot starting...");
-const Tusk = require('tusk-mastodon');
-const fs = require('fs'),
-      es = require('event-stream'),
-      path1 = 'songNumberTEMP.txt',
+import { createRestAPIClient } from "masto"
+
+import fs, { access } from 'fs'
+import pkg from "event-stream"
+const { split, mapSync } = pkg
+
+const path1 = 'songNumberTEMP.txt',
       path2 = 'scpLikesAndRepostsTEMP.txt',
       path3 = 'totalSongsNumberTEMP.txt';
 var songToPost = "",
@@ -12,7 +19,7 @@ var songToPost = "",
     songNumData = [],
     currentSongNumStr = "",
     //in case we fail to post, store the old num
-    oldSongNumStr = ""
+    oldSongNumStr = "",
 
     i_as_string = "",
     
@@ -72,8 +79,8 @@ const TUSK = new Tusk({
 
 var i = 0;
 var s = fs.createReadStream(path2)
-    .pipe(es.split())
-    .pipe(es.mapSync(function(song) {
+    .pipe(split())
+    .pipe(mapSync(function(song) {
                 // pause the readstream
                 s.pause();
                 
@@ -106,8 +113,7 @@ var s = fs.createReadStream(path2)
     );
 
 function toot(newSong) {
-    post_frequency = process.env.POST_VISIBILITY_FREQUENCY
-    _visibility = songNumber % post_frequency == 0 ? 'public' : 'unlisted'
+    const _visibility = songNumber % post_frequency == 0 ? 'public' : 'unlisted'
 
     const params = {
         status: "this song came from  my feed on SoundCloud: ⬇️\n\n"
