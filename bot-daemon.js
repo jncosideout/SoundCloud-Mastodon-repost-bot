@@ -123,26 +123,6 @@ function toot(newSong) {
         visibility: "direct"
     }
 
-    const httpParams = {
-        encoding : "multipart-form",
-        requestInit: {
-            headers: new Headers({ "content-type" : "multipart/form-data" }),
-        }
-    }
-
-    // masto.v1.statuses.create(
-    //         {
-    //             status: "test1",
-    //             visibility: "direct"
-    //         },
-    //         {
-    //             // encoding : "multipart-form",
-    //             requestInit: {
-    //                 headers: new Headers({ "Authorization" : `Bearer ${access_token}` }),
-    //             }
-    //         }
-    //     )
-        // masto.v1.statuses.create(statusParams, httpParams)
     masto.v1.statuses.create.$raw(statusParams)
         .then( function (promiseObject) {
             const data = promiseObject.data,
