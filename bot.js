@@ -64,9 +64,9 @@ if (totalSongNumData.length != 0) {
 console.log("total songs number is: " + totalSongNumData);
 totalSongNum = parseInt(totalSongStr);
 
-if (songNumber == totalSongNum) {
+if (songNumber >= totalSongNum) {
     songNumber = 0;
-    console.log('songNumber reset to zero since reached EOF')
+    console.log('songNumber reset to zero since we reached EOF on last run')
 }
 
 const masto = createRestAPIClient({
