@@ -118,6 +118,8 @@ var s = fs.createReadStream(path2)
             }
         })
         // on(end) doesn't get called
+        // because the stream is ended early before reaching EOF
+        // so totalSongStr does not equal the real total, and gets set == to the currentSongNumStr
         .on('end', function(){
             console.log('Finished Reading .on(end)');
             totalSongStr = i.toString();
