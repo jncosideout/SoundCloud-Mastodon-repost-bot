@@ -5,16 +5,6 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Launch Prog test bot-us-sc ",
-            "program": "${workspaceFolder}/bot-u-sc.js",
-            "request": "launch",
-            "skipFiles": [
-                "<node_internals>/**"
-            ],
-            "type": "node",
-            "runtimeExecutable" : "${env:HOME}/.nvm/versions/node/v21.6.0/bin/node"
-        },
-        {
             "name": "Launch Prog test bot-daemon ",
             "program": "${workspaceFolder}/bot-daemon.js",
             "request": "launch",
