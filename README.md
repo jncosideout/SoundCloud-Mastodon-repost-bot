@@ -20,14 +20,10 @@ This project goes hand-in-hand with a webscraper I built to collect those urls f
 - bot.js is the script I run in "production"
 - bot-daemon.js is now the script I use for testing
    - it mirrors the code from bot.js but reads from test data files and posts statuses with "direct" visibility
-- bot-u-sc.js is also used for testing purposes like bot-daemon.js but I'm using it to test experimental ideas.
-    - there is no point in keeping it around, but who cares, this is just my personal project
 
 ### Background on the file names
 The following is only relevant to the development history of this, and unique to my journey. But read on if you insist.
 
-I started this project years ago when I was still learning things. I made different copies of the same file for different purposes (instead of using git branches).
+I started this project years ago when I was still learning things. For example, I made different copies of the same file for different purposes (instead of using git branches).
 
 Since I run these scripts using systemd (go ahead and hate), and was learning systemd at the time, I named one file bot-daemon.js to be the version I ran as a timer-triggered unit.
-
-The bot-u-sc.js is so named because I created a system user with the same name, short for "bot-user-soundcloud", with the intention of having the systemd unit I wrote run that copy of the script as that user. This is a standard sercurity practice and I still follow it but for reasons that I have forgotten, I don't use the bot-u-sc.js script for "production." So it is largely a relic now.
